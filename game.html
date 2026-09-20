@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<title>Roping Ari, the Game</title>
+<style>
+  :root { --ground: #F1EDF4; --panel: #FBF9FC; --ink: #2B2335; --muted: #6B6078; --line: #D9D0E2; --violet: #6F5B93; --rust: #B4472A; --copper: #A8672E; --cream: #F6ECDB; --amber: #C9822B;
+          --sky1: #CFC2E4; --sky2: #F7D6BD; --city: #C3B5D6; --road: #D2C8DB; --bus: #DDB84E; --glass: #5D5470; --pole: #2B2335; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ground: #17131D; --panel: #201A29; --ink: #ECE6F2; --muted: #A598B5; --line: #372E44; --violet: #A995D1; --rust: #E5825C; --copper: #D9975A; --cream: #EADCC4; --amber: #E0A04A;
+          --sky1: #231B36; --sky2: #6A3B3C; --city: #2A2139; --road: #110E16; --bus: #A98B3B; --glass: #15111B; --pole: #0B090E; } }
+  :root[data-theme="dark"] { --ground: #17131D; --panel: #201A29; --ink: #ECE6F2; --muted: #A598B5; --line: #372E44; --violet: #A995D1; --rust: #E5825C; --copper: #D9975A; --cream: #EADCC4; --amber: #E0A04A;
+          --sky1: #231B36; --sky2: #6A3B3C; --city: #2A2139; --road: #110E16; --bus: #A98B3B; --glass: #15111B; --pole: #0B090E; }
+  body { background: var(--ground); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .page { max-width: 1120px; margin-inline: auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 14px; }
+  h1 { font-size: clamp(22px, 4vw, 30px); line-height: 1.1; margin: 0; }
+  p { margin: 0; color: var(--muted); max-width: 72ch; }
+  .stage { position: relative; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  canvas { display: block; width: 100%; height: clamp(240px, 42vw, 470px); outline: none; }
+  canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--violet); }
+  #result { position: absolute; inset: auto 12px 12px 12px; background: var(--panel); border: 1px solid var(--rust); border-radius: 6px; padding: 12px 14px; max-width: 560px; }
+  #result h2 { margin: 0 0 4px; font-size: 18px; } #result p { color: var(--ink); }
+  .below { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px; align-items: start; }
+  @media (max-width: 760px) { .below { grid-template-columns: minmax(0, 1fr); } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; }
+  #readout { font: 13px ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  #readout div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-top: 1px solid var(--line); } #readout div:first-child { border-top: 0; }
+  #readout span:first-child { color: var(--muted); font-family: system-ui, sans-serif; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 14px; }
+  kbd { font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; background: var(--ground); white-space: nowrap; }
+</style>
+<div class="page">
+  <header>
+    <h1>Roping Ari, the Game</h1>
+    <p>First playable. She rides the two trolleybus wires at 79 km/h on her poles; a trolleybus ahead is on the same wires. Get over it and back onto the wires in front of it. Click the picture first so it gets the keys; press A to watch it done once, hoop and all.</p>
+  </header>
+  <div class="stage"><canvas id="cv" tabindex="0"></canvas><div id="result" hidden><h2 id="resultTitle"></h2><p id="resultText"></p></div></div>
+  <div class="below">
+    <section class="card"><div id="readout"></div></section>
+    <section class="card"><div class="keys">
+      <span><kbd>←</kbd> <kbd>→</kbd></span><span>brake or speed up her pole tips along the wire (<kbd>Shift</kbd> for hard)</span>
+      <span><kbd>↑</kbd> <kbd>↓</kbd></span><span>pull the poles in, let them out (in the air this is her spin). In the air, keep holding <kbd>↑</kbd> with the poles fully in and she curls into a hoop: 2.3 times the spin, but <kbd>↓</kbd>, <kbd>Space</kbd>, <kbd>F</kbd> and <kbd>G</kbd> first have to open her, 0.2 s. Press <kbd>Space</kbd> in the hoop and she picks the instant to open herself, so her poles come round onto the wire</span>
+      <span><kbd>Space</kbd></span><span>on the wire: let go. In the air: one press and she goes for the wire, poles running out to it, until she has it; press again to call it off</span>
+      <span><kbd>F</kbd></span><span>hold to flare: spread flat against the air. Go between the wires spread and an arc strikes: no flare or wing for 3 s</span>
+      <span><kbd>G</kbd>, <kbd>W</kbd> <kbd>S</kbd></span><span>wing on or off, and its pitch (with the balance assist: the lead angle it holds). The dial at the bottom left shows her pitch to the air: needle is now, open marker is what you set</span>
+      <span><kbd>T</kbd> <kbd>L</kbd></span><span>balance assist off or on; restart already flying in the lifted gait, or hanging in the pulled gait</span>
+      <span>lifted gait</span><span>to enter it: hold <kbd>→</kbd> to about 100 km/h, then hold <kbd>←</kbd> back to 79; she swings forward; press <kbd>G</kbd> as her poles pass 55°. Too early and the wing drags her back, too late and she goes over the top</span>
+      <span><kbd>[</kbd> <kbd>]</kbd></span><span>game speed, slower or faster: it starts at half of real time; the physics is the same at any speed</span>
+      <span><kbd>Tab</kbd></span><span>hold for slow motion on top of that</span>
+      <span><kbd>B</kbd></span><span>trolleybus off or on: free practice on empty wires (back on, it appears 60 m ahead)</span>
+      <span><kbd>R</kbd> <kbd>P</kbd> <kbd>A</kbd></span><span>restart, pause, watch the autopilot: brake, pull, roll over the bus as a hoop, and one press of grip, after which she picks the instant to open</span>
+    </div></section>
+  </div>
+</div>
+<script>
+const DATA = {"physics":{"sim":{"g":9.81,"dt":0.0001},"body":{"mass":4.0,"poles_mass":1.0,"length":0.8},"poles":{"long":2.4,"short":1.0,"count":2,"diameter":0.015,"cd":1.1},"street":{"wire_height":5.8,"span":35.0},"bus":{"speed":3.0,"length":12.0,"shoe_overhang":1.0,"roof_height":3.4},"air":{"density":1.2,"headwind":0.0},"gaits":{"wing":{"area":0.25,"span":0.35,"cd0":0.05,"alpha_max_deg":35},"narrow_cda":0.01,"speeds":{"min":2.0,"max":32.0,"step":0.5},"lead_limit_deg":70,"lead_targets_deg":[70,60,45,30]},"flare_k":0.2},"constants_sha256":"68b61012784e116aa3aed8f5bfd5621a8dc18ae7ec099de34ac5fa4d33a818c9","levels":[{"name":"base","title":"Base","tuning":{"step":0.001,"blendFromDeg":35,"blendToDeg":70,"grip_limit":1000000000.0,"hang_limit":1000000000.0,"body_load_limit_g":14,"reach_speed":14.0,"catch_absorb":8.0,"spin_damping_spread":0.4,"arc_seconds":3.0,"hoop_hold":0.12,"hoop_time":0.2,"hoop_cda":0.02,"hoop_auto_open":1,"hoop_look_ahead":0.9},"input":{"throttle_ramp":0.25,"throttle_full":10.0,"pitch_rate_deg":90,"pole_speed":6.0,"slow_motion":0.4,"time_scale":0.5,"time_scales":[0.15,0.25,0.35,0.5,0.75,1.0]},"start":{"gait":"pulled","speed":22.0},"bus":{"speed":3.0,"count":1,"first_gap":60.0},"wind":0.0,"assists":{"balance":true,"sway":false,"slow_motion":true},"balance":{"kp":2.2,"kd":1.1,"lead_deg":65,"lead_min_deg":50,"lead_max_deg":72,"lead_rate_deg":15,"engage_deg":35,"pitch_min_deg":2},"ghost":null}],"ghosts":{}};
+(function () {
+// ---- util.js
+const rad = (d) => (d * Math.PI) / 180;
+const deg = (r) => (r * 180) / Math.PI;
+const clamp = (x, a, b) => Math.min(Math.max(x, a), b);
+const smooth = (x) => { const s = clamp(x, 0, 1); return s * s * (3 - 2 * s); };
+const wrapPi = (a) => { a = (a + Math.PI) % (2 * Math.PI); return (a < 0 ? a + 2 * Math.PI : a) - Math.PI; };
+
+// ---- aero.js
+// Lift and drag of her spread body. Port of roping_gaits.Gaits.wing (radio_ocean): the Polhamus
+// suction analogy for a very stubby wing, potential plus vortex lift, drag = cd0 + CL tan(alpha).
+
+function makeWing(physics) {
+  const w = physics.gaits.wing;
+  const aspect = (w.span * w.span) / w.area;
+  const kp = (Math.PI * aspect) / 2, kv = Math.PI;
+  /** alpha in radians, q = dynamic pressure; returns [lift, drag] in newtons */
+  return function wing(alpha, q) {
+    const s = Math.sin(alpha), c = Math.cos(alpha);
+    const cl = kp * s * c * c + kv * c * s * s;
+    return [q * w.area * cl, q * w.area * (w.cd0 + cl * Math.tan(alpha))];
+  };
+}
+
+
+/**
+ * Her body as the player controls it: narrow, or spread at a pitch against the airflow.
+ * Low pitch is the wing, full pitch is the flare, with a smooth blend between blendFrom and blendTo.
+ * At zero blend this is exactly the simulations' wing, at full blend exactly their flare at level 1.
+ * Returns [lift, drag] in newtons; s is airspeed, q dynamic pressure.
+ */
+function makeBody(physics, tuning = {}) {
+  const wing = makeWing(physics);
+  const aMax = (physics.gaits.wing.alpha_max_deg * Math.PI) / 180;
+  const from = ((tuning.blendFromDeg ?? 35) * Math.PI) / 180, to = ((tuning.blendToDeg ?? 70) * Math.PI) / 180;
+  const narrow = physics.gaits.narrow_cda, flareK = physics.flare_k;
+  return function body(spread, pitch, q, s) {
+    if (!spread) return [0, q * narrow];
+    const w = smooth((pitch - from) / (to - from));
+    const [lw, dw] = wing(Math.min(Math.max(pitch, 0), aMax), q);
+    return [(1 - w) * lw, (1 - w) * dw + w * (q * narrow + flareK * s * s)];
+  };
+}
+
+// ---- physics.js
+// Ari on the wire: a point mass on rigid massless poles pinned at the tips, which move along the wire.
+// Port of roping_sim.Sim.step (radio_ocean), same force list, same semi-implicit Euler, same pole-force
+// formula. Angles from the downward vertical, body ahead of the tips positive. Pole force: + tension,
+// - compression. Constants come from data/constants.json, never from this file.
+
+const MODE = { narrow: 0, wing: 1, flare: 2, body: 3 };   // 0-2 are the simulations' modes; body is the player's spread body at a pitch
+
+function makePhysics(physics) {
+  const G = physics.sim.g, M = physics.body.mass, W = M * G;
+  const RHO = physics.air.density, WIND = physics.air.headwind;
+  const POLE_K = physics.poles.count * 0.5 * RHO * physics.poles.cd * physics.poles.diameter;  // N per m of pole per (m/s)^2
+  const NARROW_CDA = physics.gaits.narrow_cda, FLARE_K = physics.flare_k;
+  const wing = makeWing(physics), body = makeBody(physics, physics.tuning);
+
+  /**
+   * Forces and angular acceleration for one instant on the wire.
+   * th, om: pole angle and rate; u: tip speed; aP: tip acceleration; l, dl: pole length and its rate;
+   * mode: MODE.*; level: angle of attack in radians (wing) or 0..1 (flare).
+   */
+  function attached(th, om, u, aP, l, dl, mode, level) {
+    const sin = Math.sin(th), cos = Math.cos(th);
+    const vx = u + l * om * cos + dl * sin, vy = l * om * sin - dl * cos;
+    const ax = vx + WIND, ay = vy;
+    const s = Math.hypot(ax, ay) || 1e-9;
+    const q = 0.5 * RHO * s * s;
+    let lift = 0, drag;
+    if (mode === MODE.wing) [lift, drag] = wing(level, q);
+    else if (mode === MODE.body) [lift, drag] = body(true, level, q, s);
+    else drag = q * NARROW_CDA + (mode === MODE.flare ? level * FLARE_K * s * s : 0);
+    const fx = (-drag * ax) / s - (lift * ay) / s;
+    const fy = (-drag * ay) / s + (lift * ax) / s - W;
+    const vn = (u + WIND) * cos + (l * om) / 2;                       // air across the middle of the poles
+    const pole = -POLE_K * l * Math.abs(vn) * vn;
+    const alpha = ((fx * cos + fy * sin) / M - aP * cos) / l - (2 * dl * om) / l + pole / (2 * M * l);
+    const tension = fx * sin - fy * cos + M * l * om * om - M * aP * sin;
+    return { alpha, vx, vy, lift, drag, tension, wireX: -tension * sin, wireUp: -tension * cos };
+  }
+
+  /** Advance the attached state by dt, in place. state: {th, om, u, x}. Returns the force record of the step. */
+  function stepAttached(state, ctl, dt) {
+    const out = attached(state.th, state.om, state.u, ctl.aP, ctl.l, ctl.dl, ctl.mode, ctl.level);
+    state.om += out.alpha * dt;
+    state.th += state.om * dt;
+    state.x += state.u * dt;
+    state.u += ctl.aP * dt;
+    return out;
+  }
+
+  /**
+   * The tip acceleration the wire can actually deliver. The force along the wire that the tips need is
+   * F = -T sin(th), and T itself depends on the acceleration: F(a) = -T0 sin(th) + M a sin(th)^2, with T0
+   * the pole force at a = 0. Beyond the grip limit the tips slip and deliver only what grip allows.
+   */
+  function limitTipAccel(th, om, u, aCmd, l, dl, mode, level, gripLimit) {
+    const t0 = attached(th, om, u, 0, l, dl, mode, level).tension, sin = Math.sin(th), k = M * sin * sin;
+    if (!(gripLimit < Infinity) || k < 1e-9) return { aP: aCmd, saturated: false };
+    const lo = (-gripLimit + t0 * sin) / k, hi = (gripLimit + t0 * sin) / k;
+    const aP = Math.min(Math.max(aCmd, lo), hi);
+    return { aP, saturated: aP !== aCmd };
+  }
+
+  return { attached, stepAttached, limitTipAccel, G, M, W, RHO, WIND, POLE_K, wing, body };
+}
+
+// ---- flight.js
+// Off the wire: a spinning rigid body. State {x, y, vx, vy, phi, L, l}: head position (y above the wires),
+// velocity, pole direction from head to tips (radians, y up), angular momentum, pole length. Spin is L / I(l),
+// so pole length is her spin control. Spread, she flies: lift and drag from the same body model as on the
+// wire, pitch measured against the airflow, and the spread body damps her spin (declared simplification,
+// design decision 6). Grip held: the poles reach for the wire (design decision 7). Poles fully in and pull-in held:
+// she curls into the hoop, f.curl 0..1, ring inertia, no pole drag; anything else has to uncurl her first (decision 4).
+
+function makeFlight(P, physics, tuning) {
+  const M = P.M, MP = physics.body.poles_mass, LB = physics.body.length;
+  const L_MIN = physics.poles.short, L_MAX = physics.poles.long;
+  const LONG_CDA = tuning.long_cda ?? 0.015, HOOP_CDA = tuning.hoop_cda ?? 0.02, HOOP_HOLD = tuning.hoop_hold ?? 0.12, HOOP_TIME = tuning.hoop_time ?? 0.2;
+  const AUTO_OPEN = tuning.hoop_auto_open ?? true, LOOK = tuning.hoop_look_ahead ?? 0.9;
+
+  /** Spin inertia about her own centre (roping_sim.Sim.inertia): body and poles in line, blended toward the closed ring as she curls. */
+  function inertia(l, curl = 0) {
+    const c = smooth(curl), ring = (M + MP) * ((LB + l) / (2 * Math.PI)) ** 2;
+    return (1 - c) * inLine(l) + c * ring;
+  }
+  function inLine(l) {
+    const m = M + MP, cb = LB / 2, cp = LB + l / 2, c = (M * cb + MP * cp) / m;
+    return (M * LB * LB) / 12 + M * (cb - c) ** 2 + (MP * l * l) / 12 + MP * (cp - c) ** 2;
+  }
+
+  /** Let go: attached state {th, om, u, x} with pole length l and its rate dl -> flight state. */
+  function release(st, l, dl) {
+    const sin = Math.sin(st.th), cos = Math.cos(st.th);
+    return { x: st.x + l * sin, y: -l * cos, vx: st.u + l * st.om * cos + dl * sin, vy: l * st.om * sin - dl * cos,
+             phi: Math.atan2(cos, -sin), L: inertia(l) * st.om, l, curl: 0, hold: 0, spreadNow: false };
+  }
+
+  /**
+   * One step in the air. ctl: {grip, poleRate, spread, pitch}. Returns null, or the attached state
+   * {th, om, u, x, l, dl, hard} in the step a reaching tip crosses the wire plane.
+   */
+  function step(f, ctl, dt) {
+    // the hoop: pull-in held at the shortest length curls her; letting out, reaching or spreading must first uncurl her
+    f.curl ??= 0; f.hold ??= 0;
+    const pullingIn = (ctl.poleRate || 0) < 0 && f.l <= L_MIN + 1e-6 && !ctl.grip && !ctl.spread;
+    f.waiting = !!(ctl.grip && f.curl > 0 && AUTO_OPEN && !f.opening && !f.dry);
+    f.hold = pullingIn ? f.hold + dt : 0;
+    // In the hoop she turns several times a second: nobody can pick the instant to open by hand. When grip goes down she
+    // picks it herself, once: she runs the rest of the flight ahead in her head for every instant of her next turn, opening
+    // and reaching from each, and keeps the one from which her poles come round onto the wire with the tips landing ahead of
+    // her and the least speed left along the poles. If none of them catches she opens at once.
+    f.clock = (f.clock || 0) + dt;
+    if (!ctl.grip) { f.opening = false; f.openAt = null; }
+    else if (f.curl > 0 && AUTO_OPEN && !f.opening && !f.dry) {
+      if (f.openAt == null) f.openAt = f.clock + bestDelay(f);
+      if (f.clock >= f.openAt) f.opening = true;
+    }
+    const reaching = ctl.grip && (f.opening || !AUTO_OPEN || f.curl === 0 || f.dry);
+    const wantsOut = reaching || ctl.spread || (ctl.poleRate || 0) > 0;
+    if (wantsOut) f.curl = Math.max(0, f.curl - dt / HOOP_TIME);
+    else if (f.hold >= HOOP_HOLD || (f.curl > 0 && f.l <= L_MIN + 1e-6)) f.curl = Math.min(1, f.curl + dt / HOOP_TIME);
+    const open = f.curl < 0.05, spread = ctl.spread && open, grip = reaching;
+    f.spreadNow = spread;
+    // pole length: the player's spin control, or the reach for the wire while grip is held
+    let dl = open ? ctl.poleRate || 0 : 0;
+    if (grip && open) {
+      const s = Math.sin(f.phi), need = Math.abs(s) > 1e-6 ? -f.y / s : Infinity;     // length at which the tip meets the wire
+      const target = need >= L_MIN && need <= L_MAX ? need : L_MAX;
+      dl = Math.min(Math.max((target - f.l) / dt, -tuning.reach_speed), tuning.reach_speed);
+    }
+    const tipBefore = f.y + f.l * Math.sin(f.phi);
+    f.l = Math.min(Math.max(f.l + dl * dt, L_MIN), L_MAX);
+
+    const ax = f.vx + P.WIND, ay = f.vy, s = Math.hypot(ax, ay) || 1e-9, q = 0.5 * P.RHO * s * s;
+    const c = smooth(f.curl);
+    const [lift, bodyDrag] = spread ? P.body(true, ctl.pitch, q, s) : [0, q * (LONG_CDA + (HOOP_CDA - LONG_CDA) * c)];
+    const across = Math.abs(Math.sin(f.phi - Math.atan2(ay, ax)));
+    const drag = bodyDrag + (1 - c) * P.POLE_K * f.l * across * across * s * s;      // curled, her poles are part of the ring
+    const m = M + MP;
+    f.vx += ((-drag * ax - lift * ay) / s / m) * dt;
+    f.vy += ((-drag * ay + lift * ax) / s / m - P.G) * dt;
+    f.x += f.vx * dt; f.y += f.vy * dt;
+    if (spread) f.L -= (f.L / tuning.spin_damping_spread) * dt;
+    f.phi += (f.L / inertia(f.l, f.curl)) * dt;
+
+    const tipAfter = f.y + f.l * Math.sin(f.phi);
+    if (grip && open && tipBefore * tipAfter <= 0 && tipBefore !== tipAfter) {
+      // put the tip exactly on the wire along the pole, then hand over to the pendulum
+      const sinp = Math.sin(f.phi), l = Math.abs(sinp) > 1e-6 ? Math.min(Math.max(-f.y / sinp, L_MIN), L_MAX) : f.l;
+      const tx = f.x + l * Math.cos(f.phi);
+      const th = Math.atan2(f.x - tx, -f.y);
+      const along = -f.vy * Math.cos(th) - dl;                                        // speed along the poles that the catch must absorb
+      return { th, om: (f.vy * Math.sin(th)) / l, u: f.vx, x: tx, l, dl: 0, hard: Math.abs(along) > tuning.catch_absorb, along };
+    }
+    return null;
+  }
+
+  /** Run the opening and the reach ahead on a copy, after staying curled for `delay` more seconds. */
+  function foresee(f0, delay = 0) {
+    const f = { ...f0, dry: true, opening: false, openAt: null }, h = 0.002, idle = { grip: false, poleRate: 0, spread: false, pitch: 0 }, reach = { ...idle, grip: true };
+    for (let i = 0; i < delay / h; i++) step(f, idle, h);
+    f.opening = true;
+    for (let i = 0; i < LOOK / h; i++) {
+      const got = step(f, reach, h);
+      if (got) return { hard: got.hard, along: Math.abs(got.along), tipsAhead: got.x > f.x, t: delay + i * h };
+      if (f.y < -L_MAX - 0.5) return null;
+    }
+    return null;
+  }
+  function bestDelay(f) {
+    const turn = (2 * Math.PI) / Math.max(Math.abs(f.L / inertia(f.l, f.curl)), 1e-6), span = Math.min(Math.max(turn, 0.12), 0.6);
+    let best = 0, bestScore = Infinity;
+    for (let d = 0; d <= span; d += 0.004) {
+      const p = foresee(f, d);
+      const score = p ? (p.tipsAhead ? 0 : 100) + (p.hard ? 10 : 0) + 0.5 * p.along + p.t : 1000 + d;
+      if (score < bestScore) { bestScore = score; best = d; }
+    }
+    return bestScore >= 1000 ? 0 : best;
+  }
+
+  return { inertia, release, step, foresee, spin: (f) => f.L / inertia(f.l, f.curl || 0), L_MIN, L_MAX, ringDiameter: (l) => (LB + l) / Math.PI };
+}
+
+// ---- world.js
+// The street in side view: two wires at y = 0, the road below, one trolleybus on her pair of wires.
+// x runs along the wire, y is height above the wires. Everything that can end a run is here.
+
+function makeWorld(physics, level) {
+  const WIRE_H = physics.street.wire_height, B = physics.bus, SPAN = physics.street.span;
+  const roofY = B.roof_height - WIRE_H, floorY = -WIRE_H + 0.35, roadY = -WIRE_H;
+  const bus = { shoes: level.bus.first_gap, v: level.bus.speed, on: true };      // on: false is free practice, no trolleybus on her wires
+  const geom = () => { const rear = bus.shoes + B.shoe_overhang; return { shoes: bus.shoes, rear, front: rear + B.length, poleBase: rear + 4.5, roofY, floorY }; };
+
+  function distToSegment(px, py, ax, ay, bx, by) {
+    const dx = bx - ax, dy = by - ay, t = Math.min(Math.max(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy), 0), 1);
+    return Math.hypot(px - ax - t * dx, py - ay - t * dy);
+  }
+
+  /** points: [[x, y], ...] of her body. Returns a failure message or null. */
+  function hit(points) {
+    const g = geom();
+    for (const [x, y] of points) {
+      if (y < roadY + 0.12) return 'She hit the road.';
+      if (!bus.on) continue;
+      if (x > g.rear && x < g.front && y > g.floorY && y < g.roofY) return y > g.roofY - 0.6 ? 'She came down on the roof of the trolleybus.' : 'She flew into the trolleybus.';
+      if (distToSegment(x, y, g.poleBase, g.roofY + 0.2, g.shoes, 0) < 0.18) return "She flew into the trolleybus's poles.";
+    }
+    return null;
+  }
+
+  /** Switch the trolleybus off, or back on first_gap ahead of where her tips are now. */
+  function setBus(on, tipsX = 0) { bus.on = on; if (on) bus.shoes = tipsX + level.bus.first_gap; }
+
+  return { bus, geom, hit, setBus, step(dt) { if (bus.on) bus.shoes += bus.v * dt; }, WIRE_H, SPAN, roadY, roofY };
+}
+
+// ---- game.js
+// The run itself, with no drawing and no DOM, so node can play it: on the wire or in the air, the player's
+// commands in, her state and what ended the run out.
+
+
+
+
+function makeGame(physics, level, opts = {}) {
+  const T = level.tuning, P = makePhysics({ ...physics, tuning: T }), F = makeFlight(P, physics, T), world = makeWorld(physics, level);
+  const L_MIN = physics.poles.short, L_MAX = physics.poles.long, LB = physics.body.length;
+
+  function steadyAngle(u, l) {                       // where she hangs at a steady speed, narrow
+    let a = rad(-89), b = 0;
+    for (let i = 0; i < 50; i++) { const m = (a + b) / 2; if (P.attached(m, 0, u, 0, l, 0, MODE.narrow, 0).alpha > 0) a = m; else b = m; }
+    return (a + b) / 2;
+  }
+
+  const g = {
+    t: 0, mode: 'wire', over: null, won: false, world, P, F,
+    st: { th: steadyAngle(level.start.speed, L_MAX), om: 0, u: level.start.speed, x: 0 }, l: L_MAX, dl: 0,
+    fl: null, out: null, aP: 0, saturated: false, hardCatch: false, catches: 0, releases: 0,
+    startSpeed: level.start.speed, airTime: 0, apex: 0, turns: 0, passedAt: null,
+    arcUntil: -1, arcs: 0, events: [], reaching: false, balance: null, assistOn: !!(level.assists && level.assists.balance),
+  };
+  g.arcing = () => g.t < g.arcUntil;
+
+  g.head = () => (g.mode === 'wire' ? [g.st.x + g.l * Math.sin(g.st.th), -g.l * Math.cos(g.st.th)] : [g.fl.x, g.fl.y]);
+  g.tips = () => (g.mode === 'wire' ? [g.st.x, 0] : [g.fl.x + g.fl.l * Math.cos(g.fl.phi), g.fl.y + g.fl.l * Math.sin(g.fl.phi)]);
+  g.poleLength = () => (g.mode === 'wire' ? g.l : g.fl.l);
+  g.velocity = () => (g.mode === 'wire' ? [g.out ? g.out.vx : g.st.u, g.out ? g.out.vy : 0] : [g.fl.vx, g.fl.vy]);
+
+  g.step = function (cmd, dt) {
+    if (g.over) return;
+    g.t += dt; world.step(dt); g.events.length = 0;
+    if (g.arcing()) cmd = { ...cmd, spread: false };
+    g.shown = cmd;          // while the arc burns she cannot flare or fly: her body stays narrow
+    const [hx0, hy0] = g.head();
+    if (g.mode === 'wire') {
+      const l0 = g.l;
+      g.l = clamp(g.l + cmd.poleRate * dt, L_MIN, L_MAX); g.dl = (g.l - l0) / dt;
+      cmd = balanced(cmd); g.shown = cmd;                  // what her body actually does, for the drawing
+      const mode = cmd.spread ? MODE.body : MODE.narrow, level = cmd.spread ? cmd.pitch : 0;
+      const lim = P.limitTipAccel(g.st.th, g.st.om, g.st.u, cmd.accel, g.l, g.dl, mode, level, T.grip_limit);
+      g.aP = g.st.u <= 0.5 && lim.aP < 0 ? 0 : lim.aP; g.saturated = lim.saturated;
+      g.out = P.stepAttached(g.st, { aP: g.aP, l: g.l, dl: g.dl, mode, level }, dt);
+      const geo = world.geom();
+      if (world.bus.on && g.st.x > geo.shoes - 0.12 && g.st.x < geo.shoes + 0.6 && g.st.u > world.bus.v) g.over = "Her tips ran into the trolleybus's collector shoes.";
+      if (Math.abs(g.out.tension) > T.hang_limit) cmd = { ...cmd, gripPressed: true };
+      if (cmd.gripPressed && !g.over) { g.fl = F.release(g.st, g.l, g.dl); g.mode = 'air'; g.reaching = false; g.releases++; g.airTime = 0; g.apex = g.fl.y; g.turns = 0; g.phi0 = g.fl.phi; }
+    } else {
+      const phiBefore = g.fl.phi;
+      // one press of grip in the air and she goes for the wire, until she has it; a second press calls it off
+      if (cmd.gripPressed && g.airTime > 0.15) g.reaching = !g.reaching;
+      const got = F.step(g.fl, { grip: g.reaching, poleRate: g.reaching ? 0 : cmd.poleRate, spread: cmd.spread && !g.reaching, pitch: cmd.pitch }, dt);
+      cmd = { ...cmd, spread: g.fl.spreadNow }; g.shown = cmd;                       // curled, she has to open before she can spread
+      g.airTime += dt; g.apex = Math.max(g.apex, g.fl.y); g.turns += (g.fl.phi - phiBefore) / (2 * Math.PI);
+      if (got) { g.reaching = false; g.st = { th: got.th, om: got.om, u: got.u, x: got.x }; g.l = got.l; g.dl = 0; g.mode = 'wire'; g.catches++; g.hardCatch = got.hard; g.out = null; g.fl = null; }
+    }
+    const [hx, hy] = g.head(), tail = g.tailAngle(cmd);
+    // spread wide between two wires 520 mm apart she touches both: 600 V strikes an arc between her and the wire.
+    // It does not end the run; it folds her up and keeps her narrow for as long as it burns.
+    if (!g.over && cmd.spread && hy0 * hy < 0) { g.arcUntil = g.t + T.arc_seconds; g.arcs++; g.events.push('arc'); }
+    const curl = g.mode === 'air' && g.fl ? g.fl.curl || 0 : 0, reach = LB + (F.ringDiameter(g.poleLength()) - LB) * curl;   // the hoop is compact
+    if (!g.over) g.over = world.hit([[hx, hy], [hx + reach * Math.cos(tail), hy + reach * Math.sin(tail)]]);
+    if (!g.over && world.bus.on && g.mode === 'wire' && g.catches > 0 && g.st.x > world.geom().front + 3) {
+      g.passedAt ??= g.t;
+      if (g.t - g.passedAt > 1.5) { g.over = 'She is past the trolleybus.'; g.won = true; }
+    }
+  };
+
+  // The lifted gait is an inverted pendulum: left alone, any error in her pole angle grows. With the assist on, the
+  // wing's pitch is trimmed the way the simulations do it: the pitch that balances her at the wanted lead angle at this
+  // speed, corrected in proportion to her angle error and her swing rate. It acts only once she is well ahead of her tips.
+  const BAL = level.balance;
+  function trimPitch(lead, u, l) {                  // pitch at which the moments about her tips cancel at that lead angle, or null
+    const f = (a) => P.attached(lead, 0, u, 0, l, 0, MODE.body, a).alpha;
+    let lo = rad(BAL.pitch_min_deg), hi = rad(physics.gaits.wing.alpha_max_deg);
+    if (f(lo) > 0 || f(hi) < 0) return null;         // too slow (or far too fast) for this lead angle
+    for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (f(m) < 0) lo = m; else hi = m; }
+    return (lo + hi) / 2;
+  }
+  function balanced(cmd) {
+    g.balance = null;
+    if (!g.assistOn || !BAL || !cmd.spread || cmd.flare || g.st.th < rad(BAL.engage_deg)) return cmd;
+    const lead = cmd.lead ?? rad(BAL.lead_deg), trim = trimPitch(lead, g.st.u, g.l);
+    if (trim === null) { g.balance = { lead, ok: false }; return { ...cmd, pitch: rad(physics.gaits.wing.alpha_max_deg) }; }
+    const pitch = clamp(trim - BAL.kp * (g.st.th - lead) - BAL.kd * g.st.om, rad(BAL.pitch_min_deg), rad(physics.gaits.wing.alpha_max_deg));
+    g.balance = { lead, ok: true, trim, pitch };
+    return { ...cmd, pitch };
+  }
+  if (opts.gait === 'lifted') g.st.th = rad(BAL ? BAL.lead_deg : 65);
+
+  let tail = Math.PI;
+  g.tailAngle = function (cmd) {                     // where her body points from the head: in line with the poles, or spread against the air
+    const [vx, vy] = g.velocity(), course = Math.atan2(vy, vx);
+    const poleDir = g.mode === 'wire' ? Math.atan2(Math.cos(g.st.th), -Math.sin(g.st.th)) : g.fl.phi;
+    const want = cmd && cmd.spread ? course + Math.PI + Math.min(cmd.pitch, rad(65)) : poleDir + Math.PI;
+    let d = (want - tail) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+    tail += d * 0.02;
+    return tail;
+  };
+  return g;
+}
+
+// ---- input.js
+// The player's five controls as commands, independent of the device. Digital keys drive analog commands
+// through ramps, so a keyboard can give a gentle brake or a hard one. A gamepad or the autopilot fills the
+// same `keys` object. keys: left right up down grip flare wing pitchUp pitchDown hard slow (booleans).
+
+function makeCommands(cfg) {
+  const c = { accel: 0, poleRate: 0, grip: false, gripPressed: false, spread: false, pitch: rad(90), slow: false, wingOn: false, wingPitch: rad(25),
+              flare: false, lead: rad(cfg.balance ? cfg.balance.lead_deg : 65) };
+  let prevGrip = false, prevWing = false;
+  return {
+    state: c,
+    /** The arc folds her up: the wing switches off and has to be switched on again afterwards. */
+    cancelSpread() { c.wingOn = false; c.spread = false; },
+    update(keys, dt) {
+      const target = ((keys.right ? 1 : 0) - (keys.left ? 1 : 0)) * cfg.throttle_full * (keys.hard ? 2 : 1);
+      const rate = (cfg.throttle_full * (keys.hard ? 2 : 1)) / cfg.throttle_ramp;
+      c.accel += clamp(target - c.accel, -rate * dt, rate * dt);
+      c.poleRate = ((keys.down ? 1 : 0) - (keys.up ? 1 : 0)) * cfg.pole_speed;          // up pulls the poles in, down lets them out
+      c.gripPressed = !!keys.grip && !prevGrip; prevGrip = !!keys.grip; c.grip = !!keys.grip;
+      if (keys.wing && !prevWing) c.wingOn = !c.wingOn; prevWing = !!keys.wing;
+      c.wingPitch = clamp(c.wingPitch + ((keys.pitchUp ? 1 : 0) - (keys.pitchDown ? 1 : 0)) * rad(cfg.pitch_rate_deg) * dt, rad(2), rad(35));
+      if (cfg.balance) c.lead = clamp(c.lead + ((keys.pitchUp ? 1 : 0) - (keys.pitchDown ? 1 : 0)) * rad(cfg.balance.lead_rate_deg) * dt, rad(cfg.balance.lead_min_deg), rad(cfg.balance.lead_max_deg));
+      c.flare = !!keys.flare;
+      c.spread = !!keys.flare || c.wingOn;
+      c.pitch = keys.flare ? rad(90) : c.wingPitch;
+      c.slow = !!keys.slow;
+      return c;
+    },
+  };
+}
+
+// ---- loop.js
+// Fixed-step clock: the physics always advances in whole steps of dt, however often frames arrive, so the
+// same inputs give the same flight on every machine. Inputs are read per step, by simulation time.
+
+function makeClock(dt, maxStepsPerFrame = 250) {
+  let acc = 0, steps = 0;
+  return {
+    /** Add elapsed real seconds (times any slow-motion factor); calls step(simTime) for each whole step. */
+    advance(elapsed, step) {
+      acc += elapsed;
+      let n = 0;
+      while (acc >= dt && n < maxStepsPerFrame) { step(steps * dt); steps++; acc -= dt; n++; }
+      if (n === maxStepsPerFrame) acc = 0;            // a stalled tab does not get to catch up in one frame
+      return n;
+    },
+    get time() { return steps * dt; },
+    get steps() { return steps; },
+  };
+}
+
+// ---- render.js
+// Side view, to scale, on a canvas. Drawing code descends from the Roping Ari animation pages
+// (radio_ocean/notes/scenes/ari-roping): dusk sky, far skyline, road, supports, the two wires, the
+// trolleybus with its poles on them, and Ari with her poles, body form, flare streaks.
+
+function makeRenderer(canvas, world, physics) {
+  const ctx = canvas.getContext('2d');
+  const WIRE_H = world.WIRE_H, LB = physics.body.length, B = physics.bus;
+  let W = 0, H = 0, S = 1, camX = 0, viewH = 11.6, C = {};
+  const tokens = ['ground', 'panel', 'ink', 'muted', 'violet', 'rust', 'copper', 'cream', 'amber', 'sky1', 'sky2', 'city', 'road', 'bus', 'glass', 'pole'];
+  function readTokens() { const cs = getComputedStyle(document.documentElement); for (const k of tokens) C[k] = cs.getPropertyValue('--' + k).trim(); }
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height; canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const X = (x) => (x - camX) * S + W * 0.38, Y = (y) => H - (WIRE_H + y + 0.9) * S;
+  const line = (x1, y1, x2, y2, col, w, dash) => { ctx.beginPath(); ctx.setLineDash(dash || []); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke(); ctx.setLineDash([]); };
+
+  function drawWorld() {
+    const grad = ctx.createLinearGradient(0, 0, 0, Y(-WIRE_H)); grad.addColorStop(0, C.sky1); grad.addColorStop(1, C.sky2);
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = C.city;
+    const par = 0.25, k0 = Math.floor((camX * par - W / S) / 7) - 1;
+    for (let k = k0; k < k0 + (W / S / 7) * 1.2 + 8; k++) {
+      const h = 2.2 + 3.4 * Math.abs((Math.sin(k * 12.9898) * 43758.5453) % 1), w = 4.5 + 2 * Math.abs(Math.sin(k * 7.13) % 1);
+      ctx.fillRect((k * 7 - camX * par) * S + W * 0.38, Y(-WIRE_H) - h * S, w * S, h * S + 1);
+    }
+    ctx.fillStyle = C.road; ctx.fillRect(0, Y(-WIRE_H), W, H - Y(-WIRE_H));
+    line(0, Y(-WIRE_H), W, Y(-WIRE_H), C.muted, 1);
+    const n0 = Math.floor((camX - W / S) / world.SPAN);
+    for (let k = n0; k <= n0 + Math.ceil((2 * W) / S / world.SPAN) + 1; k++) {
+      const sx = X(k * world.SPAN + 10);
+      line(sx, Y(-WIRE_H), sx, Y(1.1), C.muted, Math.max(2, 0.14 * S)); line(sx - 0.5 * S, Y(0.55), sx + 0.5 * S, Y(0.55), C.muted, 1.5);
+    }
+    line(0, Y(0.12), W, Y(0.12), C.muted, 1); line(0, Y(0), W, Y(0), C.ink, 1.6);
+    const g = world.geom();
+    if (world.bus.on && X(g.front) > -50 && X(g.shoes) < W + 50) {
+      const yb = Y(g.floorY), yr = Y(g.roofY), bh = yb - yr;
+      ctx.fillStyle = C.bus; ctx.beginPath(); ctx.roundRect(X(g.rear), yr, B.length * S, bh, [0.25 * S, 0.7 * S, 0.1 * S, 0.1 * S]); ctx.fill();
+      ctx.fillStyle = C.glass; ctx.fillRect(X(g.rear + 0.5), yr + bh * 0.2, (B.length - 1.3) * S, bh * 0.34);
+      ctx.fillStyle = C.bus; for (let q = 1; q < 6; q++) ctx.fillRect(X(g.rear + 0.5 + (q * (B.length - 1.3)) / 6), yr + bh * 0.2, Math.max(1, 0.08 * S), bh * 0.34);
+      ctx.fillStyle = C.pole; for (const wx of [g.rear + 2.6, g.front - 2.4]) { ctx.beginPath(); ctx.arc(X(wx), Y(-WIRE_H + 0.5), 0.5 * S, 0, 7); ctx.fill(); }
+      ctx.fillStyle = C.rust; ctx.fillRect(X(g.rear) - 1, yr + bh * 0.66, Math.max(2, 0.1 * S), bh * 0.12);
+      ctx.fillStyle = C.pole; ctx.fillRect(X(g.rear + 3.6), yr - 0.22 * S, 2.2 * S, 0.22 * S);
+      line(X(g.poleBase), yr - 0.2 * S, X(g.shoes), Y(0.02), C.ink, 2); line(X(g.poleBase + 0.1), yr - 0.2 * S, X(g.shoes + 0.1), Y(0.13), C.muted, 1.4);
+      ctx.fillStyle = C.ink; ctx.fillRect(X(g.shoes) - 3, Y(0) - 1, 7, 4);
+    }
+  }
+
+  function drawAri(game, cmd, ghost) {
+    const [hx, hy] = game.head(), [tx, ty] = game.tips(), tail = game.tailAngle(cmd);
+    const spread = cmd && cmd.spread, flare = spread ? clamp((cmd.pitch - 0.6) / 0.6, 0, 1) : 0;
+    ctx.globalAlpha = ghost ? 0.35 : 1;
+    // poles: dark with rust bands, bowed when they push; curled, poles and body bend into one closed ring
+    const push = game.mode === 'wire' && game.out ? clamp(-game.out.tension / 60, 0, 1) : 0;
+    const l = game.poleLength(), curl = game.mode === 'air' && game.fl ? game.fl.curl || 0 : 0, cs = curl * curl * (3 - 2 * curl);
+    const chain = (x, y, dir, len, kappa, n) => { const pts = [[x, y]], du = len / n; for (let j = 0; j < n; j++) { const a = dir + kappa * (j + 0.5) * du; x += Math.cos(a) * du; y += Math.sin(a) * du; pts.push([x, y]); } return pts; };
+    let polePts, bodyPts = null, ox = 0, oy = 0;
+    if (cs > 0.001) {
+      const kappa = (cs * 2 * Math.PI) / (l + LB), phi = game.fl.phi;
+      polePts = chain(hx, hy, phi, l, kappa, 18); bodyPts = chain(hx, hy, phi + Math.PI, LB, -kappa, 12);
+      const all = polePts.concat(bodyPts); ox = cs * (all.reduce((a, p) => a + p[0], 0) / all.length - hx); oy = cs * (all.reduce((a, p) => a + p[1], 0) / all.length - hy);
+      for (const p of all) { p[0] -= ox; p[1] -= oy; }                       // her centre, not her head, follows the flight path
+    } else {
+      const nx = -(ty - hy) / l, ny = (tx - hx) / l, sag = 0.3 * l * push * (ny > 0 ? 1 : -1), cx = (hx + tx) / 2 + nx * sag * 2, cy = (hy + ty) / 2 + ny * sag * 2;
+      polePts = []; for (let j = 0; j <= 18; j++) { const q = j / 18; polePts.push([(1 - q) * (1 - q) * hx + 2 * q * (1 - q) * cx + q * q * tx, (1 - q) * (1 - q) * hy + 2 * q * (1 - q) * cy + q * q * ty]); }
+    }
+    const pole = (col, dash) => { ctx.beginPath(); ctx.setLineDash(dash || []); polePts.forEach((p, j) => (j ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])))); ctx.strokeStyle = col; ctx.lineWidth = Math.max(2.4, 0.075 * S); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); ctx.setLineDash([]); ctx.lineCap = 'butt'; };
+    pole(C.pole); pole(C.rust, [0.05 * S, 0.3 * S]);
+    const [tipX, tipY] = polePts[polePts.length - 1], hX = hx - ox, hY = hy - oy;
+    ctx.fillStyle = C.copper; ctx.beginPath(); ctx.arc(X(tipX), Y(tipY), Math.max(3, 0.1 * S), 0, 7); ctx.fill();
+    if (game.mode === 'wire') { ctx.strokeStyle = C.amber; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(X(tipX), Y(tipY), Math.max(5, 0.17 * S), 0, 7); ctx.stroke(); }
+    // air piling up against her while she flares
+    const [vx, vy] = game.velocity(), sp = Math.hypot(vx, vy) || 1, ux = vx / sp, uy = vy / sp;
+    if (flare > 0.05) {
+      ctx.strokeStyle = C.cream; ctx.lineWidth = 1.2; ctx.globalAlpha *= 0.55 * flare;
+      for (let k = -2; k <= 2; k++) { const bx = hx + Math.cos(tail) * (0.4 + 0.12 * k) - uy * 0.13 * k, by = hy + Math.sin(tail) * (0.4 + 0.12 * k) + ux * 0.13 * k; ctx.beginPath(); ctx.moveTo(X(bx + ux * 0.25), Y(by + uy * 0.25)); ctx.lineTo(X(bx + ux * 0.95), Y(by + uy * 0.95)); ctx.stroke(); }
+      ctx.globalAlpha = ghost ? 0.35 : 1;
+    }
+    // body: narrow is deep (thick in side view), spread is a thin wing, broad when flared
+    const wB = Math.max(5, S * (spread ? 0.17 : 0.27)) * (1 + 0.45 * flare), n = 12, pts = [];
+    if (bodyPts) pts.push(...bodyPts); else for (let j = 0; j <= n; j++) pts.push([hx + (Math.cos(tail) * LB * j) / n, hy + (Math.sin(tail) * LB * j) / n]);
+    for (let j = 0; j < n; j++) { ctx.beginPath(); ctx.moveTo(X(pts[j][0]), Y(pts[j][1])); ctx.lineTo(X(pts[j + 1][0]), Y(pts[j + 1][1])); ctx.strokeStyle = C.violet; ctx.lineWidth = j < 7 ? wB : wB * (1 - (0.72 * (j - 6)) / 6); ctx.lineCap = 'round'; ctx.stroke(); }
+    ctx.lineCap = 'butt';
+    const [ex, ey] = pts[n], end = Math.atan2(ey - pts[n - 1][1], ex - pts[n - 1][0]), f = 0.2; ctx.fillStyle = C.violet; ctx.beginPath(); ctx.moveTo(X(ex), Y(ey));
+    ctx.lineTo(X(ex + Math.cos(end + 0.75) * f), Y(ey + Math.sin(end + 0.75) * f)); ctx.lineTo(X(ex + Math.cos(end - 0.75) * f), Y(ey + Math.sin(end - 0.75) * f)); ctx.fill();
+    // scarf, head, the one eye
+    const n1 = pts[1]; ctx.beginPath(); ctx.moveTo(X(n1[0]), Y(n1[1])); ctx.lineTo(X(n1[0] - ux * 0.5), Y(n1[1] - uy * 0.5)); ctx.strokeStyle = C.rust; ctx.lineWidth = Math.max(2, 0.07 * S); ctx.lineCap = 'round'; ctx.stroke(); ctx.lineCap = 'butt';
+    ctx.fillStyle = C.rust; ctx.beginPath(); ctx.arc(X(n1[0]), Y(n1[1]), wB * 0.55, 0, 7); ctx.fill();
+    const hr = Math.max(4.5, 0.15 * S), fx = -Math.cos(tail), fy = -Math.sin(tail);
+    ctx.fillStyle = C.cream; ctx.strokeStyle = C.violet; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(X(hX), Y(hY), hr, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.amber; ctx.beginPath(); ctx.arc(X(hX) + fx * hr * 0.3, Y(hY) - fy * hr * 0.3, hr * 0.5, 0, 7); ctx.fill();
+    ctx.fillStyle = C.pole; ctx.beginPath(); ctx.arc(X(hX) + fx * hr * 0.42, Y(hY) - fy * hr * 0.42, hr * 0.22, 0, 7); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // The arc between her and the wire: a copper arc burns white at the core with a green-blue fringe, and drops orange sparks.
+  function drawArc(game) {
+    const [hx, hy] = game.head(), left = game.arcUntil - game.t, life = clamp(left / 0.4, 0, 1);
+    const wx = hx - clamp(hy, -1, 1) * 0.3, n = 9, seed = Math.floor(game.t * 40);
+    const jag = (k, s) => Math.sin(seed * 12.9898 + k * 78.233 + s * 37.7) * 43758.5453 % 1;
+    const path = (s, amp) => { ctx.beginPath(); ctx.moveTo(X(hx), Y(hy)); for (let k = 1; k < n; k++) { const q = k / n; ctx.lineTo(X(hx + (wx - hx) * q) + jag(k, s) * amp, Y(hy * (1 - q)) + jag(k + 50, s) * amp * 0.6); } ctx.lineTo(X(wx), Y(0)); };
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = 0.35 + 0.65 * life;
+    path(1, 0.22 * S); ctx.strokeStyle = '#5FE3C0'; ctx.lineWidth = Math.max(4, 0.12 * S); ctx.shadowColor = '#5FE3C0'; ctx.shadowBlur = 18; ctx.stroke();
+    path(2, 0.12 * S); ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = Math.max(1.6, 0.04 * S); ctx.shadowBlur = 6; ctx.stroke();
+    ctx.shadowBlur = 0; ctx.fillStyle = '#FFB066';
+    for (let k = 0; k < 7; k++) { const a = jag(k, 9), b = Math.abs(jag(k, 11)); ctx.beginPath(); ctx.arc(X(wx) + a * 0.5 * S, Y(0) + b * 0.9 * S, Math.max(1.2, 0.025 * S), 0, 7); ctx.fill(); }
+    ctx.beginPath(); ctx.arc(X(wx), Y(0), Math.max(4, 0.13 * S), 0, 7); ctx.fillStyle = '#FFFFFF'; ctx.shadowColor = '#5FE3C0'; ctx.shadowBlur = 22; ctx.fill();
+    ctx.restore();
+  }
+
+  // Pitch gauge, bottom left: a quarter dial from 0 (edge on to the air) to 90 degrees (flat against it). The needle is
+  // what her body is doing now; the open marker is the wing pitch the player has set, which G brings back; the zones are
+  // wing, the blend, and flare. With the balance assist trimming her, the needle and the marker part company.
+  function drawPitchGauge(game, cmd, tuning) {
+    const cx = 34, cy = H - 30, r = Math.min(64, H * 0.2), ang = (d) => (-d * Math.PI) / 180;
+    const from = tuning.blendFromDeg ?? 35, to = tuning.blendToDeg ?? 70, live = cmd.spread && !game.arcing();
+    ctx.save(); ctx.globalAlpha = live ? 1 : 0.5; ctx.lineCap = 'butt';
+    ctx.fillStyle = C.panel; ctx.globalAlpha *= 0.82; ctx.beginPath(); ctx.roundRect(8, cy - r - 24, r + 232, r + 46, 6); ctx.fill(); ctx.globalAlpha = live ? 1 : 0.5;
+    for (const [a, b, col] of [[0, from, C.violet], [from, to, C.amber], [to, 90, C.rust]]) { ctx.beginPath(); ctx.arc(cx, cy, r, ang(a), ang(b), true); ctx.strokeStyle = col; ctx.lineWidth = 6; ctx.stroke(); }
+    ctx.font = '10px ui-monospace, monospace'; ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const d of [0, from, to, 90]) { const a = ang(d); line(cx + Math.cos(a) * (r - 5), cy + Math.sin(a) * (r - 5), cx + Math.cos(a) * (r + 5), cy + Math.sin(a) * (r + 5), C.ink, 1); ctx.fillText(String(d), cx + Math.cos(a) * (r + 14), cy + Math.sin(a) * (r + 14)); }
+    const set = (cmd.wingPitch ?? 0) * 180 / Math.PI, now = live ? (cmd.pitch * 180) / Math.PI : set;
+    const ms = ang(set); ctx.beginPath(); ctx.arc(cx + Math.cos(ms) * r, cy + Math.sin(ms) * r, 4.5, 0, 7); ctx.fillStyle = C.panel; ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.stroke();
+    const an = ang(now); line(cx, cy, cx + Math.cos(an) * (r - 9), cy + Math.sin(an) * (r - 9), C.ink, live ? 3 : 1.5); ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 7); ctx.fillStyle = C.ink; ctx.fill();
+    line(cx + r + 22, cy, cx + r + 46, cy, C.muted, 1); ctx.beginPath(); ctx.moveTo(cx + r + 22, cy); ctx.lineTo(cx + r + 28, cy - 3); ctx.lineTo(cx + r + 28, cy + 3); ctx.fillStyle = C.muted; ctx.fill();   // the air comes from ahead
+    ctx.textAlign = 'left'; ctx.fillStyle = C.ink; ctx.font = '600 20px ui-monospace, monospace'; ctx.fillText(`${now.toFixed(0)}°`, cx + r + 20, cy - r * 0.62);
+    ctx.font = '11px ui-monospace, monospace'; ctx.fillStyle = C.muted;
+    const what = game.arcing() ? 'arc: folded up' : !cmd.spread ? `narrow, G gives ${set.toFixed(0)}°` : cmd.flare || now > to ? 'flare' : now > from ? 'between wing and flare' : game.balance && game.balance.ok ? `wing, assist holds ${(game.balance.lead * 180 / Math.PI).toFixed(0)}° lead` : 'wing';
+    ctx.fillText('pitch to the air', cx + r + 20, cy - r * 0.62 + 17); ctx.fillText(what, cx + r + 20, cy - r * 0.62 + 31);
+    ctx.restore();
+  }
+
+  readTokens(); resize();
+  return {
+    resize, readTokens,
+    draw(game, cmdIn, tuning = {}) {
+      const cmd = game.arcing() ? { ...cmdIn, spread: false } : cmdIn;
+      const [hx, hy] = game.head(), [vx] = game.velocity();
+      const wantH = Math.max(11.6, WIRE_H + hy + 3.5);              // widen when she climbs
+      viewH += (wantH - viewH) * 0.08; S = H / viewH;
+      const lead = clamp(vx * 0.35, 2, 10); camX += (hx + lead - camX) * 0.15;
+      ctx.clearRect(0, 0, W, H); drawWorld(); if (game.arcing()) drawArc(game); drawAri(game, cmd, false);
+      drawPitchGauge(game, cmd, tuning);
+      const bx = W - 16 - 5 * S, by = H - 14; line(bx, by, bx + 5 * S, by, C.ink, 2); ctx.fillStyle = C.ink; ctx.font = '11px ui-monospace, monospace'; ctx.textAlign = 'center'; ctx.fillText('5 m', bx + 2.5 * S, by - 6);
+    },
+    snap(game) { camX = game.head()[0] + 6; },
+  };
+}
+
+// ---- autopilot.js
+// Scripted keys for the solved techniques: the watch mode of the page and the playtests in node.
+// Each returns the `keys` object of input.js for the current state of the game.
+
+const autopilots = {
+  // brake a little, pull the poles in through the bottom of the swing, let go near 60 degrees, reach on the way down
+  brakeAndPull(g) {
+    const k = {}, geo = g.world.geom();
+    if (g.mode === 'wire' && g.catches === 0) {
+      const gap = geo.shoes - g.st.x;
+      g.ap ??= { go: false };
+      if (gap < 16.5) g.ap.go = true;
+      if (g.ap.go) { k.left = true; if (g.st.th > rad(-10)) k.up = true; if (g.st.th >= rad(58)) k.grip = true; }
+    } else if (g.mode === 'air') {
+      if (g.fl.l < 2.39 && !(g.fl.vy < 0)) k.down = true;        // let the poles out: the half turn needs the slow spin
+      if (g.fl.vy < 0 && g.fl.y < 1.4) k.grip = true;            // reach for the wire on the way down
+    } else {
+      k.right = g.st.u < g.startSpeed - 0.3;                     // back up to speed
+      if (g.l < 2.39) k.down = true;
+    }
+    return k;
+  },
+
+  // the same launch, then the hoop: keep pulling in after the poles are fully in, roll over the bus as a ring, and hold grip
+  // on the way down: she picks the instant to open herself, and her poles come round onto the wire
+  brakePullHoop(g, opt = {}) {
+    const k = {}, geo = g.world.geom();
+    if (g.mode === 'wire' && g.catches === 0) {
+      g.ap ??= { go: false };
+      if (geo.shoes - g.st.x < (opt.gap ?? 16.5)) g.ap.go = true;
+      if (g.ap.go) { k.left = true; k.hard = !!opt.hard; if (g.st.th > rad(-10)) k.up = true; if (g.st.th >= rad(opt.release ?? 58)) k.grip = true; }
+    } else if (g.mode === 'air') {
+      const commit = g.fl.vy < 0 && g.fl.y < (opt.commit ?? 1.6);
+      if (commit) k.grip = true; else k.up = true;                 // pull in, and keep pulling: the hoop
+    } else {
+      k.right = g.st.u < g.startSpeed - 0.3;
+      if (g.l < 2.39) k.down = true;
+    }
+    return k;
+  },
+};
+
+// ---- main.js
+// The page: keyboard in, fixed-step game, canvas and readouts out. `#watch` lets the autopilot play.
+
+
+
+
+
+
+const KEYMAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', ' ': 'grip', f: 'flare', F: 'flare', g: 'wing', G: 'wing',
+                 w: 'pitchUp', W: 'pitchUp', s: 'pitchDown', S: 'pitchDown', Shift: 'hard', Tab: 'slow' };
+
+function boot(data, doc) {
+  const $ = (id) => doc.getElementById(id), level = data.levels[0], dt = level.tuning.step;
+  let game, cmds, clock, renderer, keys = {}, paused = false, busOn = !/[#&]nobus/.test(location.hash), lifted = /[#&]lifted/.test(location.hash), assist = null,
+      scale = +(/[#&]speed=([\d.]+)/.exec(location.hash) || [0, level.input.time_scale ?? 1])[1], watch = /[#&]watch/.test(location.hash), last = performance.now(), cmd;
+  function restart() {
+    game = makeGame(data.physics, level, { gait: lifted ? 'lifted' : 'pulled' }); cmds = makeCommands({ ...level.input, balance: level.balance });
+    if (assist !== null) game.assistOn = assist;
+    if (lifted) cmds.state.wingOn = true; clock = makeClock(dt); cmd = cmds.update({}, dt);
+    game.world.setBus(busOn, 0);
+    renderer = makeRenderer($('cv'), game.world, data.physics); renderer.snap(game);
+    $('result').hidden = true; keys = {};
+  }
+  function readout() {
+    const g = game, o = g.out, [vx, vy] = g.velocity(), head = g.head(), geo = g.world.geom(), G0 = g.P.G;
+    const rows = [
+      ['game speed', `${scale.toFixed(2)}× real time${cmd.slow ? `, slow motion ×${level.input.slow_motion}` : ''}  ([ ])`],
+      ['state', g.mode === 'wire' ? 'on the wire' : `in the air ${g.airTime.toFixed(2)} s${g.fl.waiting ? ', hoop: waiting for the moment to open (Space calls it off)' : g.reaching ? ', reaching for the wire (Space calls it off)' : g.fl.curl > 0.5 ? ', hoop' : g.fl.curl > 0 ? ', curling' : ''}`],
+      ['tip speed', g.mode === 'wire' ? `${(g.st.u * 3.6).toFixed(0)} km/h` : 'off the wire'],
+      ['tip acceleration', g.mode === 'wire' ? `${(g.aP / G0).toFixed(2)} g${g.saturated ? ' (grip limit)' : ''}` : '—'],
+      ['her speed', `${(Math.hypot(vx, vy) * 3.6).toFixed(0)} km/h`],
+      ['pole length', `${g.poleLength().toFixed(2)} m`],
+      ['pole angle', g.mode === 'wire' ? `${deg(g.st.th).toFixed(0)}°` : `${(g.turns).toFixed(2)} turns so far`],
+      ['spin', g.mode === 'wire' ? `${(g.st.om / (2 * Math.PI)).toFixed(2)} turns/s (swing)` : `${(g.F.spin(g.fl) / (2 * Math.PI)).toFixed(2)} turns/s  (↑ faster, ↓ slower)`],
+      ['poles', g.mode === 'wire' && o ? (o.tension >= 0 ? `pull ${(o.tension / g.P.W).toFixed(1)} g` : `push ${(-o.tension).toFixed(0)} N`) : 'free'],
+      ['body', g.arcing() ? `narrow: arc burning, ${(g.arcUntil - g.t).toFixed(1)} s` : cmd.spread ? `spread, pitch ${deg(cmd.pitch).toFixed(0)}°` : 'narrow'],
+      ['balance assist', !g.assistOn ? 'off (T)' : !g.balance ? 'on, waiting: wing on and 35° ahead of her tips' : g.balance.ok ? `holding ${deg(g.balance.lead).toFixed(0)}° lead, pitch ${deg(g.balance.pitch).toFixed(1)}°` : `too slow to fly at ${deg(g.balance.lead).toFixed(0)}° lead`],
+      ['lift', g.mode === 'wire' && o ? `${((100 * o.lift) / g.P.W).toFixed(0)} % of her weight` : '—'],
+      ['above the wires', `${head[1].toFixed(1)} m`],
+      ['to the bus', !g.world.bus.on ? 'no trolleybus (B)' : head[0] < geo.shoes ? `${(geo.shoes - g.tips()[0]).toFixed(0)} m to its shoes` : head[0] < geo.front ? 'over it' : `${(head[0] - geo.front).toFixed(0)} m past it`],
+    ];
+    $('readout').replaceChildren(...rows.map(([a, b]) => { const d = doc.createElement('div'), x = doc.createElement('span'), y = doc.createElement('span'); x.textContent = a; y.textContent = b; d.append(x, y); return d; }));
+  }
+  function frame(now) {
+    const elapsed = Math.max(0, Math.min(0.1, (now - last) / 1000)); last = now;      // never negative: frame times and performance.now can disagree at start
+    if (!paused && !game.over) clock.advance(elapsed * scale * (cmd.slow ? level.input.slow_motion : 1), () => { cmd = cmds.update(watch ? autopilots.brakePullHoop(game) : keys, dt); game.step(cmd, dt); if (game.events.includes('arc')) cmds.cancelSpread(); });
+    renderer.draw(game, game.shown || cmd, level.tuning); readout();
+    if (game.over && $('result').hidden) {
+      $('result').hidden = false; $('resultTitle').textContent = game.won ? 'Past the bus' : 'Run over';
+      $('resultText').textContent = `${game.over} ${game.won ? `Speed kept: ${((100 * game.st.u) / game.startSpeed).toFixed(0)} %. Apex ${game.apex.toFixed(1)} m above the wires, ${Math.abs(game.turns).toFixed(1)} turns.` : ''} Press R to go again.`;
+    }
+    requestAnimationFrame(frame);
+  }
+  doc.addEventListener('keydown', (e) => {
+    if (e.key === 'r' || e.key === 'R') { restart(); return; }
+    if (e.key === 'p' || e.key === 'P') { paused = !paused; return; }
+    if (e.key === 'a' || e.key === 'A') { watch = !watch; restart(); return; }
+    if (e.key === '[' || e.key === ']') { const S = level.input.time_scales || [0.25, 0.5, 1], i = S.reduce((b, v, j) => (Math.abs(v - scale) < Math.abs(S[b] - scale) ? j : b), 0); scale = S[Math.min(Math.max(i + (e.key === ']' ? 1 : -1), 0), S.length - 1)]; return; }
+    if (e.key === 't' || e.key === 'T') { assist = !game.assistOn; game.assistOn = assist; return; }
+    if (e.key === 'l' || e.key === 'L') { lifted = !lifted; restart(); return; }
+    if (e.key === 'b' || e.key === 'B') { busOn = !busOn; game.world.setBus(busOn, game.tips()[0]); game.passedAt = null; return; }   // free practice: no trolleybus; back on, it appears ahead of her
+    const k = KEYMAP[e.key]; if (k) { keys[k] = true; e.preventDefault(); }
+  });
+  doc.addEventListener('keyup', (e) => { const k = KEYMAP[e.key]; if (k) { keys[k] = false; e.preventDefault(); } });
+  window.addEventListener('blur', () => { keys = {}; });
+  $('cv').addEventListener('pointerdown', () => $('cv').focus());
+  new ResizeObserver(() => renderer.resize()).observe($('cv'));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renderer.readTokens());
+  restart();
+  const at = /[#&]t=([\d.]+)/.exec(location.hash);          // #watch&t=3.3 : the autopilot's run, held at that moment (a still mode)
+  if (at) { for (let i = 0; i < +at[1] / dt && !game.over; i++) { cmd = cmds.update(autopilots.brakePullHoop(game), dt); game.step(cmd, dt); } if (/[#&]arc/.test(location.hash)) game.arcUntil = game.t + 2.5;
+    if (/[#&]hoop/.test(location.hash) && game.fl) { game.fl.l = 1.0; game.fl.curl = 1; }   // a still of the hoop   // a still of the arc, for checking the drawing
+    paused = true; renderer.snap(game); for (let i = 0; i < 60; i++) renderer.draw(game, game.shown || cmd, level.tuning); }
+  requestAnimationFrame(frame);
+  return { game: () => game, paused: () => paused, scale: () => scale };           // for the page smoke test
+}
+
+boot(DATA, document);
+})();
+</script>
+</html>
