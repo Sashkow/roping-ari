@@ -28,6 +28,12 @@
   #readout div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-top: 1px solid var(--line); } #readout div:first-child { border-top: 0; }
   #readout span:first-child { color: var(--muted); font-family: system-ui, sans-serif; }
   .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 14px; }
+  .padhead { font-size: 14px; } .padhead span { color: var(--muted); }
+  .axes { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px 14px; margin-block: 10px; font: 12px ui-monospace, monospace; color: var(--muted); }
+  .axes .bar { height: 6px; background: var(--line); border-radius: 3px; position: relative; margin-top: 3px; } .axes .bar i { position: absolute; top: -2px; width: 4px; height: 10px; background: var(--violet); border-radius: 2px; transform: translateX(-2px); }
+  .padmap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto; gap: 6px 12px; align-items: center; font-size: 14px; }
+  .padmap button { font: 13px system-ui, sans-serif; padding: 3px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--ground); color: var(--ink); cursor: pointer; } .padmap button.on { border-color: var(--rust); color: var(--rust); }
+  .padmap code { font: 12px ui-monospace, monospace; color: var(--muted); } .padnote { font-size: 13px; margin-top: 8px; }
   kbd { font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; background: var(--ground); white-space: nowrap; }
 </style>
 <div class="page">
@@ -52,6 +58,15 @@
       <span><kbd>R</kbd> <kbd>P</kbd> <kbd>A</kbd></span><span>restart, pause, watch the autopilot: brake, pull, roll over the bus as a hoop, and one press of grip, after which she picks the instant to open</span>
     </div></section>
   </div>
+  <section class="card" id="padCard">
+    <div class="padhead"><strong>Radio or gamepad</strong> <span id="padStatus">not connected. Plug it in over USB (a RadioMaster TX12: choose "USB Joystick" on the radio), then move a stick.</span></div>
+    <div id="padBody" hidden>
+      <div id="padAxes" class="axes"></div>
+      <div id="padButtons" class="padnote" style="font-family: ui-monospace, monospace"></div>
+      <div id="padMap" class="padmap"></div>
+      <p class="padnote">Sticks are the commands themselves, no ramps. To change what a control does press Assign, then move that stick or press that button. "Flip" reverses a direction. Saved in this browser.</p>
+    </div>
+  </section>
 </div>
 <script>
 const DATA = {"physics":{"sim":{"g":9.81,"dt":0.0001},"body":{"mass":4.0,"poles_mass":1.0,"length":0.8},"poles":{"long":2.4,"short":1.0,"count":2,"diameter":0.015,"cd":1.1},"street":{"wire_height":5.8,"span":35.0},"bus":{"speed":3.0,"length":12.0,"shoe_overhang":1.0,"roof_height":3.4},"air":{"density":1.2,"headwind":0.0},"gaits":{"wing":{"area":0.25,"span":0.35,"cd0":0.05,"alpha_max_deg":35},"narrow_cda":0.01,"speeds":{"min":2.0,"max":32.0,"step":0.5},"lead_limit_deg":70,"lead_targets_deg":[70,60,45,30]},"flare_k":0.2},"constants_sha256":"68b61012784e116aa3aed8f5bfd5621a8dc18ae7ec099de34ac5fa4d33a818c9","levels":[{"name":"base","title":"Base","tuning":{"step":0.001,"blendFromDeg":35,"blendToDeg":70,"grip_limit":1000000000.0,"hang_limit":1000000000.0,"body_load_limit_g":14,"reach_speed":14.0,"catch_absorb":8.0,"spin_damping_spread":0.4,"arc_seconds":3.0,"hoop_hold":0.12,"hoop_time":0.2,"hoop_cda":0.02,"hoop_auto_open":1,"hoop_look_ahead":0.9},"input":{"throttle_ramp":0.25,"throttle_full":10.0,"pitch_rate_deg":90,"pole_speed":6.0,"slow_motion":0.4,"time_scale":0.5,"time_scales":[0.15,0.25,0.35,0.5,0.75,1.0]},"start":{"gait":"pulled","speed":22.0},"bus":{"speed":3.0,"count":1,"first_gap":60.0},"wind":0.0,"assists":{"balance":true,"sway":false,"slow_motion":true},"balance":{"kp":2.2,"kd":1.1,"lead_deg":65,"lead_min_deg":50,"lead_max_deg":72,"lead_rate_deg":15,"engage_deg":35,"pitch_min_deg":2},"ghost":null}],"ghosts":{}};
@@ -426,12 +441,13 @@ function makeGame(physics, level, opts = {}) {
 function makeCommands(cfg) {
   const c = { accel: 0, poleRate: 0, grip: false, gripPressed: false, spread: false, pitch: rad(90), slow: false, wingOn: false, wingPitch: rad(25),
               flare: false, lead: rad(cfg.balance ? cfg.balance.lead_deg : 65) };
-  let prevGrip = false, prevWing = false;
+  let prevGrip = false, prevWing = false, prevPadGrip = false, prevPadWing = false;
   return {
     state: c,
     /** The arc folds her up: the wing switches off and has to be switched on again afterwards. */
     cancelSpread() { c.wingOn = false; c.spread = false; },
-    update(keys, dt) {
+    /** keys: the keyboard (or autopilot); pad: an optional reading from gamepad.js, whose sticks are the commands themselves. */
+    update(keys, dt, pad) {
       const target = ((keys.right ? 1 : 0) - (keys.left ? 1 : 0)) * cfg.throttle_full * (keys.hard ? 2 : 1);
       const rate = (cfg.throttle_full * (keys.hard ? 2 : 1)) / cfg.throttle_ramp;
       c.accel += clamp(target - c.accel, -rate * dt, rate * dt);
@@ -444,6 +460,23 @@ function makeCommands(cfg) {
       c.spread = !!keys.flare || c.wingOn;
       c.pitch = keys.flare ? rad(90) : c.wingPitch;
       c.slow = !!keys.slow;
+      if (pad) {
+        const full = cfg.throttle_full * 2;                                   // the whole stick: from a touch of brake to the hard one
+        if (pad.speed !== 0) c.accel = Math.sign(pad.speed) * Math.abs(pad.speed) ** 1.5 * full;
+        if (pad.pole !== 0) c.poleRate = -pad.pole * cfg.pole_speed;          // stick up pulls the poles in
+        const gripNow = !!keys.grip || pad.grip; c.gripPressed = gripNow && !prevPadGrip; prevPadGrip = gripNow; c.grip = gripNow;
+        c.flare = !!keys.flare || pad.flare;
+        if (pad.wing != null) {                                               // a switch or button of its own for the wing (G): the stick then only sets its pitch, over its whole travel
+          if (pad.wingToggles) { if (pad.wing && !prevPadWing) c.wingOn = !c.wingOn; } else c.wingOn = pad.wing;
+          prevPadWing = pad.wing;
+          c.wingPitch = rad(pad.liftTopDeg ?? 90) * pad.lift;
+        } else if (cfg.pad_lift !== false) {                                  // the lift stick is the whole body control, by position: narrow at the bottom, then the wing, its pitch rising to the flare at the top
+          c.wingOn = pad.lift > 0.03;
+          c.wingPitch = rad(pad.liftTopDeg ?? 90) * pad.lift;
+        }
+        c.spread = c.flare || c.wingOn;
+        c.pitch = c.flare ? rad(90) : c.wingPitch;
+      }
       return c;
     },
   };
@@ -661,8 +694,80 @@ const autopilots = {
   },
 };
 
+// ---- gamepad.js
+// A radio transmitter or any gamepad as the controller. A RadioMaster TX12 in EdgeTX "USB Joystick" mode is a plain
+// HID joystick: its first channels arrive as axes, and a switch arrives as an axis or as a button depending on how the
+// model is set up on the radio, so every function can be mapped to either. Sticks are analog: no ramps, the stick is
+// the command. Pure functions here (node can test them); main.js does the polling and the mapping screen.
+
+// EdgeTX default channel order AETR, sticks in mode 2: ch1 aileron = right stick left-right, ch2 elevator = right stick
+// up-down, ch3 throttle = left stick up-down (does not centre), ch4 rudder = left stick left-right, ch5 here a button
+// or switch of the radio. The radio sends ch1..ch7 as X, Y, Z, Rx, Ry, Rz, Throttle, and browsers number those differently:
+//   Chrome (Linux) keeps that order:            0 X ch1, 1 Y ch2, 2 Z ch3, 3 Rx ch4, 4 Ry ch5, ...
+//   Firefox (Linux) takes the radio for a standard gamepad (it reports gamepad buttons): X, Y, Rx, Ry are axes 0 to 3,
+//   and Z, which is ch3, the throttle stick, arrives as the analog left trigger: button 6, 0 at the bottom, 1 at the top.
+//                                               0 X ch1, 1 Y ch2, 2 Rx ch4, 3 Ry ch5, button 6 = Z ch3
+// (both confirmed on the author's TX12, 2026-09-20).
+// The author's set-up (2026-09-20): the left stick up-down is the whole body control, by position: at the bottom she is
+// narrow (the wing off, what G does), above it she is spread at a pitch that runs to 90 degrees at the top, which is the
+// flare; so neither G nor F is needed on the radio. The button on ch5 turns the automatic stabilisation (the balance
+// assist) on and off, the button on ch6 connects and disconnects her poles, the left stick's left-right does nothing.
+//   ch5 is Ry: Chrome axis 4, Firefox axis 3.   ch6 is Rz: Chrome axis 5, Firefox the analog right trigger, button 7.
+// A function may have several sources (an array), or none (null).
+const layout = (lift, grip, assist) => ({
+  speed: { kind: 'axis', index: 0, invert: false },          // right stick left-right: brake / speed up her tips
+  pole: { kind: 'axis', index: 1, invert: false },           // right stick up-down: up pulls the poles in (held in the air: the hoop)
+  lift,                                                      // left stick up-down: narrow at the bottom, then wing, then flare at the top
+  grip,                                                      // connect / disconnect her poles, one press
+  assist,                                                    // automatic stabilisation on / off, one press
+  wing: null, wingToggles: true,                             // optional: a control of its own for wing on / off; the stick then only sets the pitch
+  flare: null,                                               // optional: the top of the lift stick already is the flare
+  liftTopDeg: 90,                                            // pitch at the top of the lift stick
+  deadzone: 0.06,
+});
+const MAPPINGS = {
+  chrome: layout({ kind: 'axis', index: 2, invert: false }, { kind: 'axis', index: 5, invert: false }, { kind: 'axis', index: 4, invert: false }),
+  firefox: layout({ kind: 'button', index: 6, invert: false }, { kind: 'button', index: 7, invert: false }, { kind: 'axis', index: 3, invert: false }),
+};
+const DEFAULT_MAPPING = MAPPINGS.chrome;
+const defaultMappingFor = (userAgent = '') => (/firefox/i.test(userAgent) ? { name: 'Firefox axis order', mapping: MAPPINGS.firefox } : { name: 'Chrome axis order', mapping: MAPPINGS.chrome });
+
+const one = (m) => (Array.isArray(m) ? m[0] : m);
+const raw = (pad, m0) => {                                   // as an axis, -1..1; an analog button (a trigger) counts from -1 released to +1 pressed
+  const m = one(m0);
+  if (!m) return 0;
+  if (m.kind === 'button') { const b = pad.buttons[m.index]; return b ? (2 * (b.value || (b.pressed ? 1 : 0)) - 1) * (m.invert ? -1 : 1) : -1; }
+  const v = pad.axes[m.index]; return (Number.isFinite(v) ? v : 0) * (m.invert ? -1 : 1);
+};
+const on = (pad, m) => (Array.isArray(m) ? m : [m]).some((x) => x && raw(pad, x) > 0.5);
+const dead = (v, dz) => (Math.abs(v) < dz ? 0 : (Math.sign(v) * (Math.abs(v) - dz)) / (1 - dz));
+
+/** One reading of the pad as analog commands: speed and pole in -1..1, lift as a position 0..1, grip and flare as booleans. */
+function readPad(pad, mapping) {
+  const dz = mapping.deadzone ?? 0.06;
+  return {
+    speed: dead(clamp(raw(pad, mapping.speed), -1, 1), dz),
+    pole: dead(clamp(raw(pad, mapping.pole), -1, 1), dz),
+    lift: clamp((raw(pad, mapping.lift) + 1) / 2, 0, 1),
+    grip: on(pad, mapping.grip),
+    flare: on(pad, mapping.flare),
+    wing: mapping.wing ? on(pad, mapping.wing) : null, wingToggles: !!mapping.wingToggles,
+    assist: on(pad, mapping.assist), liftTopDeg: mapping.liftTopDeg ?? 90,
+  };
+}
+
+/** Which control moved most since `before`: for the mapping screen. Returns {kind, index} or null. */
+function movedControl(pad, before) {
+  let best = null, amount = 0.45;
+  pad.axes.forEach((v, i) => { const d = Math.abs(v - (before.axes[i] ?? 0)); if (d > amount) { amount = d; best = { kind: 'axis', index: i }; } });
+  pad.buttons.forEach((b, i) => { if (Math.abs((b.value || (b.pressed ? 1 : 0)) - (before.buttons[i] || 0)) > 0.45) best = { kind: 'button', index: i }; });
+  return best;
+}
+const snapshot = (pad) => ({ axes: [...pad.axes], buttons: pad.buttons.map((b) => b.value || (b.pressed ? 1 : 0)) });
+
 // ---- main.js
 // The page: keyboard in, fixed-step game, canvas and readouts out. `#watch` lets the autopilot play.
+
 
 
 
@@ -676,6 +781,42 @@ function boot(data, doc) {
   const $ = (id) => doc.getElementById(id), level = data.levels[0], dt = level.tuning.step;
   let game, cmds, clock, renderer, keys = {}, paused = false, busOn = !/[#&]nobus/.test(location.hash), lifted = /[#&]lifted/.test(location.hash), assist = null,
       scale = +(/[#&]speed=([\d.]+)/.exec(location.hash) || [0, level.input.time_scale ?? 1])[1], watch = /[#&]watch/.test(location.hash), last = performance.now(), cmd;
+  // ---- a radio or gamepad: polled once a frame; its reading rides along into every physics step of that frame
+  const FUNCS = [['speed', 'tip speed: brake / speed up'], ['pole', 'pole length: up pulls in'], ['lift', 'lift: wing and its pitch, by stick position'], ['grip', 'connect / disconnect her poles (one press)'], ['assist', 'automatic stabilisation on / off (one press)'], ['wing', 'wing on / off, like G (optional: the lift stick already does it)'], ['flare', 'flare, while held (optional: the top of the lift stick already is the flare)']];
+  const PAD_DEFAULT = defaultMappingFor(navigator.userAgent), PAD_KEY = 'roping-pad-mapping-v6';      // browsers number the radio's axes differently
+  let mapping = structuredClone(PAD_DEFAULT.mapping), padRead = null, assigning = null, padShown = false, prevPadAssist = false;
+  try { const saved = JSON.parse(localStorage.getItem(PAD_KEY) || 'null'); if (saved && saved.speed) mapping = { ...mapping, ...saved }; } catch (e) { /* storage blocked: defaults */ }
+  const saveMapping = () => { try { localStorage.setItem(PAD_KEY, JSON.stringify(mapping)); } catch (e) { /* session only */ } };
+  const thePad = () => { const pads = (navigator.getGamepads ? [...navigator.getGamepads()] : []).filter(Boolean); return pads.find((p) => /radiomaster|edgetx|opentx|tx12|frsky|joystick/i.test(p.id)) || pads[0] || null; };
+  function drawMapping() {
+    const box = $('padMap'); box.replaceChildren();
+    for (const [key, label] of FUNCS) {
+      const ms = (Array.isArray(mapping[key]) ? mapping[key] : [mapping[key]]).filter(Boolean), m = ms[0], a = doc.createElement('span'), b = doc.createElement('code'), c = doc.createElement('button'), d = doc.createElement('button');
+      a.textContent = label; b.textContent = ms.length ? ms.map((x) => `${x.kind} ${x.index}${x.invert ? ' flipped' : ''}`).join(' or ') : 'not assigned';
+      c.textContent = assigning && assigning.key === key ? 'move it now…' : 'Assign'; c.className = assigning && assigning.key === key ? 'on' : '';
+      c.addEventListener('click', () => { const p = thePad(); assigning = p ? { key, before: snapshot(p) } : null; drawMapping(); });
+      if (key === 'wing' && m) { d.textContent = mapping.wingToggles ? 'each press toggles' : 'open while on'; d.addEventListener('click', () => { mapping.wingToggles = !mapping.wingToggles; saveMapping(); drawMapping(); }); }
+      else { d.textContent = 'Flip'; d.disabled = !m; d.addEventListener('click', () => { if (m) { mapping[key] = { ...m, invert: !m.invert }; saveMapping(); drawMapping(); } }); }
+      box.append(a, b, c, d);
+    }
+    const r = doc.createElement('button'); r.textContent = `Back to the TX12 defaults (${PAD_DEFAULT.name})`; r.style.gridColumn = '1 / -1'; r.style.justifySelf = 'start';
+    r.addEventListener('click', () => { mapping = structuredClone(PAD_DEFAULT.mapping); saveMapping(); drawMapping(); }); box.append(r);
+  }
+  function pollPad() {
+    const p = thePad();
+    if (!p) { padRead = null; if (padShown) { padShown = false; $('padBody').hidden = true; $('padStatus').textContent = 'disconnected.'; } return; }
+    if (!padShown && assist === null) { assist = false; game.assistOn = false; }      // with the lift stick in hand she is flown by hand; the radio's button turns the stabilisation on
+    if (!padShown) { padShown = true; $('padBody').hidden = false; $('padStatus').textContent = `${p.id}: ${p.axes.length} axes, ${p.buttons.length} buttons. Defaults for the ${PAD_DEFAULT.name}.`; drawMapping();
+      $('padAxes').replaceChildren(...p.axes.map((_, i) => { const w = doc.createElement('div'), bar = doc.createElement('div'), dot = doc.createElement('i'); w.textContent = `axis ${i}`; bar.className = 'bar'; bar.append(dot); w.append(bar); return w; })); }
+    [...$('padAxes').children].forEach((w, i) => { const dot = w.querySelector('i'); if (dot) dot.style.left = `${(((p.axes[i] || 0) + 1) / 2) * 100}%`; if (w.firstChild) w.firstChild.textContent = `axis ${i}  ${(p.axes[i] || 0).toFixed(2)}`; });
+    const live = p.buttons.map((b, i) => [i, b.value || (b.pressed ? 1 : 0)]).filter(([, v]) => v > 0.02);      // some browsers hand a stick over as an analog button
+    $('padButtons').textContent = live.length ? 'buttons active: ' + live.map(([i, v]) => `button ${i} = ${v.toFixed(2)}`).join(', ') : 'buttons active: none';
+    if (assigning) { const hit = movedControl(p, assigning.before); if (hit) { mapping[assigning.key] = { ...hit, invert: false }; assigning = null; saveMapping(); drawMapping(); } padRead = null; return; }
+    padRead = readPad(p, mapping);
+    if (padRead.assist && !prevPadAssist) { assist = !game.assistOn; game.assistOn = assist; }      // the radio's button for the automatic stabilisation
+    prevPadAssist = padRead.assist;
+  }
+
   function restart() {
     game = makeGame(data.physics, level, { gait: lifted ? 'lifted' : 'pulled' }); cmds = makeCommands({ ...level.input, balance: level.balance });
     if (assist !== null) game.assistOn = assist;
@@ -697,7 +838,7 @@ function boot(data, doc) {
       ['spin', g.mode === 'wire' ? `${(g.st.om / (2 * Math.PI)).toFixed(2)} turns/s (swing)` : `${(g.F.spin(g.fl) / (2 * Math.PI)).toFixed(2)} turns/s  (↑ faster, ↓ slower)`],
       ['poles', g.mode === 'wire' && o ? (o.tension >= 0 ? `pull ${(o.tension / g.P.W).toFixed(1)} g` : `push ${(-o.tension).toFixed(0)} N`) : 'free'],
       ['body', g.arcing() ? `narrow: arc burning, ${(g.arcUntil - g.t).toFixed(1)} s` : cmd.spread ? `spread, pitch ${deg(cmd.pitch).toFixed(0)}°` : 'narrow'],
-      ['balance assist', !g.assistOn ? 'off (T)' : !g.balance ? 'on, waiting: wing on and 35° ahead of her tips' : g.balance.ok ? `holding ${deg(g.balance.lead).toFixed(0)}° lead, pitch ${deg(g.balance.pitch).toFixed(1)}°` : `too slow to fly at ${deg(g.balance.lead).toFixed(0)}° lead`],
+      ['balance assist', !g.assistOn ? 'off (T, or the radio\'s button)' : !g.balance ? 'on, waiting: wing on and 35° ahead of her tips' : g.balance.ok ? `holding ${deg(g.balance.lead).toFixed(0)}° lead, pitch ${deg(g.balance.pitch).toFixed(1)}°` : `too slow to fly at ${deg(g.balance.lead).toFixed(0)}° lead`],
       ['lift', g.mode === 'wire' && o ? `${((100 * o.lift) / g.P.W).toFixed(0)} % of her weight` : '—'],
       ['above the wires', `${head[1].toFixed(1)} m`],
       ['to the bus', !g.world.bus.on ? 'no trolleybus (B)' : head[0] < geo.shoes ? `${(geo.shoes - g.tips()[0]).toFixed(0)} m to its shoes` : head[0] < geo.front ? 'over it' : `${(head[0] - geo.front).toFixed(0)} m past it`],
@@ -705,8 +846,9 @@ function boot(data, doc) {
     $('readout').replaceChildren(...rows.map(([a, b]) => { const d = doc.createElement('div'), x = doc.createElement('span'), y = doc.createElement('span'); x.textContent = a; y.textContent = b; d.append(x, y); return d; }));
   }
   function frame(now) {
+    pollPad();
     const elapsed = Math.max(0, Math.min(0.1, (now - last) / 1000)); last = now;      // never negative: frame times and performance.now can disagree at start
-    if (!paused && !game.over) clock.advance(elapsed * scale * (cmd.slow ? level.input.slow_motion : 1), () => { cmd = cmds.update(watch ? autopilots.brakePullHoop(game) : keys, dt); game.step(cmd, dt); if (game.events.includes('arc')) cmds.cancelSpread(); });
+    if (!paused && !game.over) clock.advance(elapsed * scale * (cmd.slow ? level.input.slow_motion : 1), () => { cmd = cmds.update(watch ? autopilots.brakePullHoop(game) : keys, dt, watch ? null : padRead); game.step(cmd, dt); if (game.events.includes('arc')) cmds.cancelSpread(); });
     renderer.draw(game, game.shown || cmd, level.tuning); readout();
     if (game.over && $('result').hidden) {
       $('result').hidden = false; $('resultTitle').textContent = game.won ? 'Past the bus' : 'Run over';
