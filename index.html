@@ -18,6 +18,8 @@
   .card.play { border-color: var(--rust); }
   .card h2 { margin: 0 0 4px; font-size: 19px; } .card.play h2::after { content: "  ▸ play"; color: var(--rust); font-weight: 500; font-size: 15px; }
   .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .demos { margin-top: 28px; } .demos h2 { font-size: 20px; margin: 0 0 6px; } .demos ul { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; }
+  .demos li a { font-weight: 600; } .demos li span { color: var(--muted); } .demos kbd { font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
   footer { color: var(--muted); font-size: 14px; max-width: 70ch; }
 </style>
 </head>
@@ -34,6 +36,22 @@
     <a class="card" href="gaits.html"><h2>Ari's Wire Gaits</h2><p>Where her body sits relative to her pole tips at a steady speed: pulled, or lifted and flying ahead of them. Four scenarios.</p></a>
     <a class="card" href="first-version.html"><h2>Roping Ari, the first version</h2><p>The move at town speed: brake, back swing, drive, release at 60°, hoop over the bus, catch, one full circle.</p></a>
   </div>
+  <section class="demos">
+    <h2>The moves, as demos</h2>
+    <p class="lede">Ten candidate rewards of the game, each a scripted run through the same physics with numbered stops at its key moments (tick "Stop at key moments" on the page, or step with <kbd>,</kbd> and <kbd>.</kbd>). These are on the kinematic-tips build of 2026-09-23, kept as it was.</p>
+    <ul>
+      <li><a href="game-kinematic.html#demo=spun_down">Spun down</a> <span>badge: the hoop, then opened, then a soft catch</span></li>
+      <li><a href="game-kinematic.html#demo=held_it">Held it</a> <span>badge: a hard catch</span></li>
+      <li><a href="game-kinematic.html#demo=through_the_arc">Through the arc</a> <span>badge: arced between the wires, stayed on, and still passed the bus</span></li>
+      <li><a href="game-kinematic.html#demo=short_pole_flight">Short-pole flight</a> <span>badge: the lifted gait held for 2 s at the shortest pole length</span></li>
+      <li><a href="game-kinematic.html#demo=hoop_over_roof">Hoop over the roof</a> <span>badge: curled into the hoop with her head above the trolleybus</span></li>
+      <li><a href="game-kinematic.html#demo=kiss">Kiss</a> <span>badge: a catch with under 0.5 m/s of speed along the poles to absorb</span></li>
+      <li><a href="game-kinematic.html#demo=swoop">Swoop</a> <span>line: REL → SPREAD → CATCH → LIFTED before the swing back</span></li>
+      <li><a href="game-kinematic.html#demo=rolled_up">Rolled up</a> <span>line: REL → CURL → OPEN → SPREAD → CATCH in one flight</span></li>
+      <li><a href="game-kinematic.html#demo=one_breath">One breath</a> <span>line: PULL → REL → CATCH → PASS in under 3 s</span></li>
+      <li><a href="game-kinematic.html#demo=full_repertoire">Full repertoire</a> <span>line: REL, CURL, OPEN, SPREAD, CATCH and LIFTED, in any order, within 6 s</span></li>
+    </ul>
+  </section>
   <footer>Point-mass physics, a 4 kg body on rigid poles, still air; every number on these pages comes from the same small simulations. The game needs a keyboard.<br>Pages, notes and data: <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; game code: <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0-or-later</a>. Sources and licences: <a href="https://github.com/Sashkow/ari-roping">github.com/Sashkow/ari-roping</a>. Roping Ari by Oleksandr Lykhenko; the character Ari, her name and her look, by Ira Shostak; the character herself is not under these licences.</footer>
 </main>
 </body>
