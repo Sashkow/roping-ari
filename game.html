@@ -48,7 +48,7 @@
     <p id="lede">First playable. She rides the two trolleybus wires at 79 km/h on her poles; a trolleybus ahead is on the same wires. Get over it and back onto the wires in front of it. Click the picture first so it gets the keys; press A to watch it done once, hoop and all.</p>
   </header>
   <div class="stage"><canvas id="cv" tabindex="0"></canvas><div id="result" hidden><h2 id="resultTitle"></h2><p id="resultText"></p></div><div id="momentCard" hidden></div></div>
-  <section class="card" id="demoBox" hidden><label class="check"><input type="checkbox" id="stopAt" checked> Stop at key moments</label><div class="moments" id="moments"></div></section>
+  <section class="card" id="demoBox" hidden><label class="check"><input type="checkbox" id="stopAt"> Stop at key moments</label><div class="moments" id="moments"></div></section>
   <div class="below">
     <section class="card"><div id="readout"></div></section>
     <section class="card"><div class="keys">
@@ -943,7 +943,7 @@ function boot(data, doc) {
       scale = +(/[#&]speed=([\d.]+)/.exec(location.hash) || [0, level.input.time_scale ?? 1])[1], watch = /[#&]watch/.test(location.hash), last = performance.now(), cmd;
   // ---- a demo (#demo=<id>): a candidate of demos.js played by its plan, with its key moments numbered (tasks 12.1, 11.3)
   const demoId = (/[#&]demo=(\w+)/.exec(location.hash) || [])[1], demo = demoId && data.demos && data.demos[demoId] && demos[demoId] ? { ...data.demos[demoId], plan: demos[demoId].plan } : null;
-  let demoState = freshState(), stopAtMoments = true, moment = -1, seeking = false;
+  let demoState = freshState(), stopAtMoments = false, moment = -1, seeking = false;
   const moments = demo ? demo.tokens.filter((k) => k.name !== 'BACK') : [];
   const label = (k) => `${k.name}${k.phase ? '.' + k.phase : ''}${k.kind ? '.' + k.kind : ''}`;
   const numbersOf = (k) => Object.entries(k).filter(([a]) => !['t', 'name', 'note', 'phase', 'kind', 'x', 'y'].includes(a)).map(([a, b]) => `${a} ${b}`).join(', ');
