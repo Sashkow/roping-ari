@@ -36,6 +36,7 @@
   .padmap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto; gap: 6px 12px; align-items: center; font-size: 14px; }
   .padmap button { font: 13px system-ui, sans-serif; padding: 3px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--ground); color: var(--ink); cursor: pointer; } .padmap button.on { border-color: var(--rust); color: var(--rust); }
   .padmap code { font: 12px ui-monospace, monospace; color: var(--muted); } .padnote { font-size: 13px; margin-top: 8px; }
+  .soundctl { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 8px; font-size: 14px; } .soundctl select { font: 14px system-ui, sans-serif; margin-left: 4px; }
   .moments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .moments button { font: 13px system-ui, sans-serif; padding: 4px 9px; border: 1px solid var(--line); border-radius: 4px; background: var(--ground); color: var(--ink); cursor: pointer; display: flex; gap: 6px; align-items: baseline; }
   .moments button b { font-weight: 600; } .moments button span { font: 11px ui-monospace, monospace; color: var(--muted); }
@@ -51,6 +52,9 @@
   </header>
   <div class="stage"><canvas id="cv" tabindex="0"></canvas><div id="result" hidden><h2 id="resultTitle"></h2><p id="resultText"></p></div><div id="momentCard" hidden></div></div>
   <section class="card" id="demoBox" hidden><label class="check"><input type="checkbox" id="stopAt"> Stop at key moments</label><div class="moments" id="moments"></div></section>
+  <section class="card" id="soundBox"><div class="padhead"><strong>The sound of her tips</strong> <span>a traction-motor hum whose pitch follows her speed, and a chopper singing one note; the jaws click when they close. Pick a variant, then click the picture.</span></div>
+    <div class="soundctl"><label>Variant <select id="soundVariant"><option value="off">off</option><option value="synth">synthesised (ZiU motor + Ganz chopper, from their numbers)</option><option value="laz">recordings (local build only)</option></select></label>
+    <label>Stage <select id="soundStage"><option value="ari">Ari's tips: two octaves up, 25 dB down</option><option value="bus">the trolleybus as it is</option></select></label></div></section>
   <div class="below">
     <section class="card"><div id="readout"></div></section>
     <section class="card"><div class="keys">
@@ -965,9 +969,90 @@ function grid(params) {
 }
 const freshState = () => ({ wingOn: false, pitch: 25 });
 
+// ---- sound.js
+// SPDX-License-Identifier: GPL-3.0-or-later
+// The sound of her tips (2026-09-24). Two variants of the same pair of sounds a ZiU/Ganz trolleybus makes:
+// a traction-motor hum whose pitch follows speed, and a chopper that sings one fixed note (900 Hz on the
+// Ganz-GVM) whatever the speed. Each variant has two stages: `bus`, the trolleybus as it is, and `ari`,
+// her tips: the hum two octaves up (her coils' pole pitch is centimetres, the bus reaches its speed
+// through a wheel and a gearbox), the whole thing far quieter (40 N of force, not kilonewtons), the
+// chopper note kept, since a switching frequency is a design choice, not a size.
+//   synth   Web Audio oscillators: the hum from a few harmonics, the chopper from a square wave with a
+//           slow amplitude wobble.
+//   laz     two recordings of the real thing (a DK-213 motor whine and the GVM chopper), looped, the hum
+//           resampled to follow speed. The recordings are not in the repository (unknown authors); the
+//           local build embeds them from local/sounds/ when present.
+// Driven from the frame loop: update(game) reads tip speed and the coil and jaw forces of the last step.
+// Pure functions first, so node can test the mapping without an AudioContext.
+
+/** Hum frequency in hertz for a tip speed u (m/s). bus: the DK-213 recording's ~190 Hz at 22 m/s; ari: u / pole pitch (3 cm). */
+function humHz(u, stage) {
+  return stage === 'ari' ? Math.abs(u) / 0.03 : Math.abs(u) * (190 / 22);
+}
+
+/** Loudness 0..1 of the hum from the coil force (N) and the coil rating; the jaws add a little grind. */
+function humGain(fCoil, fJaw, coilRating, stage) {
+  const drive = Math.min(1, Math.abs(fCoil) / coilRating), jaw = Math.min(0.5, Math.abs(fJaw) / 450);
+  return (0.15 + 0.85 * drive + 0.5 * jaw) * (stage === 'ari' ? 0.06 : 1);       // ari: about -25 dB
+}
+
+const CHOPPER_HZ = 900;
+
+function makeSound(ctx, opts = {}) {
+  const stage = { name: opts.stage || 'ari', variant: opts.variant || 'synth' };
+  const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+  const coilRating = opts.coilRating || 40;
+  // ---- synth: hum = fundamental + 3 harmonics through a low-pass; chopper = square with a 50 Hz wobble
+  const hum = ctx.createGain(), humLp = ctx.createBiquadFilter(); humLp.type = 'lowpass'; humLp.frequency.value = 2500; hum.connect(humLp); humLp.connect(master);
+  const harmonics = [1, 2, 3, 4].map((n, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = i === 0 ? 'triangle' : 'sine'; g.gain.value = [0.6, 0.25, 0.12, 0.06][i]; o.connect(g); g.connect(hum); o.start(); return { o, n }; });
+  const chop = ctx.createGain(), chopOsc = ctx.createOscillator(), wobble = ctx.createOscillator(), wobbleGain = ctx.createGain();
+  chopOsc.type = 'square'; chopOsc.frequency.value = CHOPPER_HZ; chopOsc.connect(chop); chop.connect(master); chopOsc.start();
+  wobble.frequency.value = 50; wobbleGain.gain.value = 0.3; wobble.connect(wobbleGain); wobbleGain.connect(chop.gain); wobble.start();
+  chop.gain.value = 0;
+  // ---- laz: looped recordings, if given
+  let motorSrc = null, chopSrc = null; const motorGain = ctx.createGain(), chopGain2 = ctx.createGain(), lazHp = ctx.createBiquadFilter();
+  lazHp.type = 'highpass'; lazHp.frequency.value = 80; motorGain.connect(lazHp); lazHp.connect(master); chopGain2.connect(master); motorGain.gain.value = 0; chopGain2.gain.value = 0;
+  if (opts.buffers && opts.buffers.motor && opts.buffers.chopper) {
+    motorSrc = ctx.createBufferSource(); motorSrc.buffer = opts.buffers.motor; motorSrc.loop = true; motorSrc.connect(motorGain); motorSrc.start();
+    chopSrc = ctx.createBufferSource(); chopSrc.buffer = opts.buffers.chopper; chopSrc.loop = true; chopSrc.connect(chopGain2); chopSrc.start();
+  }
+  const hasLaz = !!motorSrc;
+  // ---- the jaws: a short click when they close
+  let jawWas = 0;
+  function click() {
+    const n = ctx.sampleRate * 0.03, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n) ** 2;
+    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; g.gain.value = stage.name === 'ari' ? 0.05 : 0.3; s.connect(g); g.connect(master); s.start();
+  }
+  const ramp = (p, v, t = 0.03) => { p.cancelScheduledValues(ctx.currentTime); p.setTargetAtTime(v, ctx.currentTime, t); };
+
+  return {
+    stage, hasLaz,
+    set(name, variant) { if (name) stage.name = name; if (variant) stage.variant = variant; },
+    /** Called once per frame with the game. */
+    update(g) {
+      const on = g.mode === 'wire' && g.out, u = on ? g.st.u : 0, fCoil = on ? g.out.fCoil || 0 : 0, fJaw = on ? g.out.fJaw || 0 : 0;
+      const f = humHz(u, stage.name), gain = on ? humGain(fCoil, fJaw, coilRating, stage.name) : 0;
+      const chopper = on ? Math.min(1, Math.abs(fCoil) / coilRating) * (stage.name === 'ari' ? 0.02 : 0.25) : 0;
+      const synth = stage.variant === 'synth' || !hasLaz;
+      for (const { o, n } of harmonics) ramp(o.frequency, Math.min(8000, f * n), 0.02);
+      ramp(hum.gain, synth ? gain : 0); ramp(chop.gain, synth ? chopper : 0);
+      if (hasLaz) {
+        // the recording's whine is ~190 Hz at cruise; play it so that its pitch follows the same law as the synth's
+        ramp(motorSrc.playbackRate, Math.max(0.05, f / (190 / 22 * 22)), 0.02);
+        ramp(motorGain.gain, synth ? 0 : gain * 1.5); ramp(chopGain2.gain, synth ? 0 : chopper * 1.2);
+      }
+      if (Math.abs(fJaw) > 5 && jawWas <= 5) click(); jawWas = Math.abs(fJaw);
+      ramp(master.gain, 0.8, 0.05);
+    },
+    mute() { ramp(master.gain, 0, 0.05); },
+  };
+}
+
 // ---- main.js
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The page: keyboard in, fixed-step game, canvas and readouts out. `#watch` lets the autopilot play.
+
 
 
 
@@ -986,6 +1071,21 @@ function boot(data, doc) {
   // ---- a demo (#demo=<id>): a candidate of demos.js played by its plan, with its key moments numbered (tasks 12.1, 11.3)
   const demoId = (/[#&]demo=(\w+)/.exec(location.hash) || [])[1], demo = demoId && data.demos && data.demos[demoId] && demos[demoId] ? { ...data.demos[demoId], plan: demos[demoId].plan } : null;
   let demoState = freshState(), stopAtMoments = false, moment = -1, seeking = false;
+  // ---- the sound of her tips: off until the player picks a variant (browsers want a click before audio)
+  let sound = null, soundCtx = null;
+  const soundWant = (/[#&]sound=(synth|laz)/.exec(location.hash) || [])[1], stageWant = (/[#&]stage=(bus|ari)/.exec(location.hash) || [, 'ari'])[1];
+  async function soundBuffers() {
+    if (!data.sounds) return null;
+    const dec = async (b64) => soundCtx.decodeAudioData(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer);
+    return { motor: await dec(data.sounds.motor), chopper: await dec(data.sounds.chopper) };
+  }
+  async function setSound(variant, stage) {
+    if (variant === 'off') { if (sound) sound.mute(); sound = null; return; }
+    if (!soundCtx) soundCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (soundCtx.state === 'suspended') await soundCtx.resume();
+    if (!sound) sound = makeSound(soundCtx, { variant, stage, buffers: await soundBuffers(), coilRating: (data.physics.tips || {}).coil ? data.physics.tips.coil.thrust : 40 });
+    sound.set(stage, variant);
+  }
   const moments = demo ? demo.tokens.filter((k) => k.name !== 'BACK') : [];
   const label = (k) => `${k.name}${k.phase ? '.' + k.phase : ''}${k.kind ? '.' + k.kind : ''}`;
   const numbersOf = (k) => Object.entries(k).filter(([a]) => !['t', 'name', 'note', 'phase', 'kind', 'x', 'y'].includes(a)).map(([a, b]) => `${a} ${b}`).join(', ');
@@ -1079,6 +1179,7 @@ function boot(data, doc) {
         const next = moments.findIndex((k) => k.t > game.t - dt - 1e-9 && k.t <= game.t + 1e-9); if (next >= 0) { moment = next; if (stopAtMoments) paused = true; drawMoments(); } }
     });
     renderer.draw(game, game.shown || cmd, level.tuning, demo ? marks() : []); readout();
+    if (sound) { if (paused || game.over) sound.mute(); else sound.update(game); }
     if (game.over && $('result').hidden) {
       $('result').hidden = false; $('resultTitle').textContent = game.won ? 'Past the bus' : 'Run over';
       $('resultText').textContent = `${game.over} ${game.won ? `Speed kept: ${((100 * game.st.u) / game.startSpeed).toFixed(0)} %. Apex ${game.apex.toFixed(1)} m above the wires, ${Math.abs(game.turns).toFixed(1)} turns.` : ''} Press R to go again.`;
@@ -1103,6 +1204,13 @@ function boot(data, doc) {
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renderer.readTokens());
   if (demo) { $('title').textContent = `Demo: ${demo.title}`; $('lede').textContent = `${demo.kind === 'line' ? 'A line' : 'A candidate badge'}: ${demo.what}. ${demo.closes ? 'It closes' : 'It does not close'}${Object.keys(demo.numbers).length ? ' (' + Object.entries(demo.numbers).map(([k, v]) => `${k} ${v}`).join(', ') + ')' : ''}. ${demo.note} Playback stops at each numbered moment; P plays on, , and . step between moments, R restarts.`;
     $('demoBox').hidden = false; $('stopAt').addEventListener('change', (e) => { stopAtMoments = e.target.checked; }); }
+  // the sound controls live on every page, demo or not
+  { const sel = $('soundVariant'), st = $('soundStage');
+    const lazOpt = sel.querySelector && sel.querySelector('option[value=laz]'); if (!data.sounds && lazOpt) lazOpt.disabled = true;
+    if (soundWant && (soundWant !== 'laz' || data.sounds)) sel.value = soundWant; st.value = stageWant;
+    const apply = () => setSound(sel.value, st.value);
+    sel.addEventListener('change', apply); st.addEventListener('change', apply);
+    if (sel.value !== 'off') doc.addEventListener('pointerdown', apply, { once: true }); }
   if (data.demos && Object.keys(data.demos).length) { $('demoList').hidden = false;
     $('demoLinks').replaceChildren(...Object.entries(data.demos).map(([id, d]) => { const a = doc.createElement('a'); a.href = `#demo=${id}`; a.textContent = `${d.title}`; a.title = d.what; a.className = d.closes ? 'closes' : 'open'; return a; }));
     window.addEventListener('hashchange', () => location.reload()); }                     // a demo link changes the hash; the page is rebuilt from it
