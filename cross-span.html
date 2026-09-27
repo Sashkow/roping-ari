@@ -84,7 +84,7 @@
   </section>
 </div>
 <script>
-const DATA = {"physics":{"sim":{"g":9.81,"dt":0.0001},"body":{"mass":4.0,"poles_mass":3.0,"length":0.8},"poles":{"long":2.4,"short":1.0,"count":2,"diameter":0.015,"cd":1.1},"street":{"wire_height":5.8,"span":35.0},"bus":{"speed":3.0,"length":12.0,"shoe_overhang":1.0,"roof_height":3.4},"air":{"density":1.2,"headwind":0.0},"gaits":{"wing":{"area":0.25,"span":0.35,"cd0":0.05,"alpha_max_deg":35},"narrow_cda":0.01,"speeds":{"min":2.0,"max":32.0,"step":0.5},"lead_limit_deg":70,"lead_targets_deg":[70,60,45,30]},"flare_k":0.2,"tips":{"coil":{"thrust":40.0,"fade_speed":3.0},"grip":450.0,"shoe_mu":0.2,"hang_limit":1000.0,"sign_smooth":0.05,"mass":3.0}},"constants_sha256":"28013205efda6ee86e57087bbc68b6a31811a73a1a6c089ba5faf56f62b80d8e","levels":[{"name":"base","title":"Base","tuning":{"step":0.001,"blendFromDeg":35,"blendToDeg":70,"hang_limit":1000,"body_load_limit_g":14,"reach_speed":14.0,"catch_absorb":8.0,"spin_damping_spread":0.4,"arc_seconds":3.0,"hoop_hold":0.12,"hoop_time":0.2,"hoop_cda":0.02,"hoop_auto_open":1,"hoop_look_ahead":0.9},"input":{"throttle_ramp":0.25,"throttle_full":10.0,"pitch_rate_deg":90,"pole_speed":6.0,"slow_motion":0.4,"time_scale":0.5,"time_scales":[0.15,0.25,0.35,0.5,0.75,1.0]},"start":{"gait":"pulled","speed":22.0},"bus":{"speed":3.0,"count":1,"first_gap":60.0},"tips":{},"wind":0.0,"assists":{"balance":true,"sway":false,"slow_motion":true},"balance":{"kp":2.2,"kd":1.1,"lead_deg":65,"lead_min_deg":50,"lead_max_deg":72,"lead_rate_deg":15,"engage_deg":35,"pitch_min_deg":2},"cross_span":{"height":0.55,"radius":0.05,"pretension":8000,"length":25,"ea":3000000.0,"breaking":40000,"restitution":0.15,"spark":0.15},"ghost":null}],"ghosts":{},"demos":{"cross_ride":{"title":"Clear of the spans","kind":"cross","what":"from a standstill to the 6th support on the wire, never meeting a cross-span: the steady ride","group":"cross-span","start":"still","params":{"target":15},"closes":true,"numbers":{"time_s":16.13,"top_kmh":55,"span_hits":0,"sections":"7/7"},"note":"On the wire her poles and body hang below it, and the cross-spans run 55 cm above it, so riding never meets one: they are a hazard only for a hop.","ended":"time up","tokens":[{"t":5.834,"name":"BACK","speed":55,"note":"swung back behind her tips","x":61.28,"y":-2.4},{"t":8.896,"name":"BACK","speed":55,"note":"swung back behind her tips","x":108.49,"y":-2.4},{"t":11.931,"name":"BACK","speed":55,"note":"swung back behind her tips","x":155.27,"y":-2.4},{"t":14.938,"name":"BACK","speed":55,"note":"swung back behind her tips","x":201.63,"y":-2.4},{"t":18.628,"name":"BACK","speed":2,"note":"swung back behind her tips","x":234.21,"y":-2.4},{"t":21.978,"name":"BACK","speed":0,"note":"swung back behind her tips","x":230.02,"y":-2.4},{"t":25.266,"name":"BACK","speed":-3,"note":"swung back behind her tips","x":225.99,"y":-2.4},{"t":28.555,"name":"BACK","speed":-4,"note":"swung back behind her tips","x":221.63,"y":-2.4},{"t":32.373,"name":"BACK","speed":2,"note":"swung back behind her tips","x":222.38,"y":-2.4},{"t":35.543,"name":"BACK","speed":2,"note":"swung back behind her tips","x":223.95,"y":-2.4},{"t":38.714,"name":"BACK","speed":2,"note":"swung back behind her tips","x":225.53,"y":-2.4}]},"cross_fast":{"title":"Fastest, every section","kind":"cross","what":"the least time from a standstill to the 6th support, catching the wire in every 35 m section and never meeting a cross-span: full power on the wire, or hops inside each section","group":"cross-span","start":"still","params":{"strategy":"ride","release":35,"hard":false},"closes":true,"numbers":{"time_s":11.03,"top_kmh":125,"span_hits":0,"sections":"7/7","hops":0},"note":"Full thrust the whole way wins. The search also tried a brake-and-release hop inside every section; none closed: each hop cost more speed than the flight gave back, and the catch either missed a section or a pole met the next cross-span.","ended":"time up","tokens":[{"t":16.092,"name":"BACK","speed":2,"note":"swung back behind her tips","x":295.19,"y":-2.4},{"t":19.309,"name":"BACK","speed":2,"note":"swung back behind her tips","x":296.79,"y":-2.4},{"t":22.522,"name":"BACK","speed":2,"note":"swung back behind her tips","x":298.37,"y":-2.4},{"t":25.732,"name":"BACK","speed":2,"note":"swung back behind her tips","x":299.97,"y":-2.4},{"t":28.94,"name":"BACK","speed":2,"note":"swung back behind her tips","x":301.56,"y":-2.4},{"t":32.143,"name":"BACK","speed":2,"note":"swung back behind her tips","x":303.14,"y":-2.4},{"t":35.344,"name":"BACK","speed":2,"note":"swung back behind her tips","x":304.73,"y":-2.4},{"t":38.543,"name":"BACK","speed":2,"note":"swung back behind her tips","x":306.32,"y":-2.4}]},"cross_easy":{"title":"Least effort","kind":"cross","what":"the least energy from a standstill to the 6th support within a minute, every section caught, no cross-span met: coil work plus the work of pulling the poles in","group":"cross-span","start":"still","params":{"target":7},"closes":true,"numbers":{"effort_kJ":2.41,"time_s":28.28,"top_kmh":29,"span_hits":0},"note":"Held speeds of 4 to 15 m/s were tried; the cheapest was 7 m/s (2.4 kJ). Faster costs more in air drag and in the push to get up to speed; slower costs more too, because the coils switch on and off around the held speed and set her swinging.","ended":"time up","tokens":[{"t":3.776,"name":"BACK","speed":29,"note":"swung back behind her tips","x":22.31,"y":-2.4},{"t":6.889,"name":"BACK","speed":29,"note":"swung back behind her tips","x":47.42,"y":-2.4},{"t":9.997,"name":"BACK","speed":29,"note":"swung back behind her tips","x":72.49,"y":-2.4},{"t":13.101,"name":"BACK","speed":29,"note":"swung back behind her tips","x":97.53,"y":-2.4},{"t":16.201,"name":"BACK","speed":29,"note":"swung back behind her tips","x":122.54,"y":-2.4},{"t":19.298,"name":"BACK","speed":29,"note":"swung back behind her tips","x":147.52,"y":-2.4},{"t":22.391,"name":"BACK","speed":29,"note":"swung back behind her tips","x":172.47,"y":-2.4},{"t":25.481,"name":"BACK","speed":29,"note":"swung back behind her tips","x":197.39,"y":-2.4},{"t":30.506,"name":"BACK","speed":2,"note":"swung back behind her tips","x":224.89,"y":-2.4}]}},"page":{"title":"Roping Ari: the cross-spans","listTitle":"Cross-span demos","listLine":"from a standstill, the trolleybus off, the cross-spans on, no wing: to the 6th support, catching the wire in every 35 m section","defaultDemo":"cross_ride"}};
+const DATA = {"physics":{"sim":{"g":9.81,"dt":0.0001},"body":{"mass":4.0,"poles_mass":3.0,"length":0.8},"poles":{"long":2.4,"short":1.0,"count":2,"diameter":0.015,"cd":1.1},"street":{"wire_height":5.8,"span":35.0},"bus":{"speed":3.0,"length":12.0,"shoe_overhang":1.0,"roof_height":3.4},"air":{"density":1.2,"headwind":0.0},"gaits":{"wing":{"area":0.25,"span":0.35,"cd0":0.05,"alpha_max_deg":35},"narrow_cda":0.01,"speeds":{"min":2.0,"max":32.0,"step":0.5},"lead_limit_deg":70,"lead_targets_deg":[70,60,45,30]},"flare_k":0.2,"tips":{"coil":{"thrust":40.0,"fade_speed":3.0},"grip":450.0,"shoe_mu":0.2,"hang_limit":1000.0,"sign_smooth":0.05,"mass":3.0}},"constants_sha256":"28013205efda6ee86e57087bbc68b6a31811a73a1a6c089ba5faf56f62b80d8e","levels":[{"name":"base","title":"Base","tuning":{"step":0.001,"blendFromDeg":35,"blendToDeg":70,"hang_limit":1000,"body_load_limit_g":14,"reach_speed":14.0,"catch_absorb":8.0,"reach_past":0.03,"spin_damping_spread":0.4,"arc_seconds":3.0,"hoop_hold":0.12,"hoop_time":0.2,"hoop_cda":0.02,"hoop_auto_open":1,"hoop_look_ahead":0.9},"input":{"throttle_ramp":0.25,"throttle_full":10.0,"pitch_rate_deg":90,"pole_speed":6.0,"slow_motion":0.4,"time_scale":0.5,"time_scales":[0.15,0.25,0.35,0.5,0.75,1.0]},"start":{"gait":"pulled","speed":22.0},"bus":{"speed":3.0,"count":1,"first_gap":60.0},"tips":{},"wind":0.0,"assists":{"balance":true,"sway":false,"slow_motion":true},"balance":{"kp":2.2,"kd":1.1,"lead_deg":65,"lead_min_deg":50,"lead_max_deg":72,"lead_rate_deg":15,"engage_deg":35,"pitch_min_deg":2},"cross_span":{"height":0.55,"radius":0.05,"pretension":8000,"length":25,"ea":3000000.0,"breaking":40000,"restitution":0.15,"spark":0.15},"ghost":null}],"ghosts":{},"demos":{"cross_ride":{"title":"Under the hangers","kind":"cross","what":"from a standstill to the 6th support at a steady 10 m/s, dipping under the hanger at every support","group":"cross-span","start":"still","params":{"target":10,"lead":0.12,"len":2},"closes":true,"numbers":{"time_s":22.08,"top_kmh":40,"span_hits":0,"sections":"7/7","dips":7},"note":"Riding into a support her tips would meet the hanger, so at each one she lets go a tenth of a second or so before it, falls a few centimetres with her tips under the clamp, and reaches back for the wire once past it.","ended":"time up","tokens":[{"t":0.067,"name":"PULL","from":2.39,"to":2,"note":"pulled the poles in","x":0,"y":-2},{"t":2.139,"name":"REL","kind":"hand","speed":32,"angle":-3,"l":2,"note":"let go","x":8.88,"y":-2},{"t":2.3,"name":"REACH","height":-2.13,"note":"reached for the wire","x":10.31,"y":-2.13},{"t":2.31,"name":"CATCH","kind":"hard","speed":32,"l":2.15,"angle":-1,"note":"a hard catch","x":10.4,"y":-2.15},{"t":5.303,"name":"REL","kind":"hand","speed":33,"angle":3,"l":2.01,"note":"let go","x":43.75,"y":-2},{"t":5.464,"name":"REACH","height":-2.15,"note":"reached for the wire","x":45.22,"y":-2.15},{"t":5.476,"name":"CATCH","kind":"hard","speed":33,"l":2.19,"angle":-7,"note":"a hard catch","x":45.33,"y":-2.17},{"t":8.383,"name":"BACK","speed":39,"note":"swung back behind her tips","x":76.96,"y":-2.01},{"t":8.541,"name":"REL","kind":"hand","speed":35,"angle":-6,"l":2.01,"note":"let go","x":78.49,"y":-2},{"t":8.554,"name":"APEX","height":-1.99,"speed":35,"note":"the top of the flight","x":78.61,"y":-1.99},{"t":8.702,"name":"REACH","height":-2.1,"note":"reached for the wire","x":80.04,"y":-2.1},{"t":8.713,"name":"CATCH","kind":"hard","speed":34,"l":2.17,"angle":-12,"note":"a hard catch","x":80.14,"y":-2.12},{"t":10.968,"name":"BACK","speed":38,"note":"swung back behind her tips","x":103.98,"y":-2.01},{"t":11.904,"name":"REL","kind":"hand","speed":37,"angle":-10,"l":2.01,"note":"let go","x":113.38,"y":-1.98},{"t":11.906,"name":"APEX","height":-1.98,"speed":37,"note":"the top of the flight","x":113.41,"y":-1.98},{"t":12.065,"name":"REACH","height":-2.1,"note":"reached for the wire","x":115.04,"y":-2.1},{"t":12.075,"name":"CATCH","kind":"hard","speed":37,"l":2.16,"angle":-11,"note":"a hard catch","x":115.15,"y":-2.12},{"t":13.704,"name":"BACK","speed":37,"note":"swung back behind her tips","x":132.22,"y":-2.01},{"t":15.321,"name":"REL","kind":"hand","speed":39,"angle":-5,"l":2.01,"note":"let go","x":148.6,"y":-2},{"t":15.482,"name":"REACH","height":-2.13,"note":"reached for the wire","x":150.33,"y":-2.13},{"t":15.492,"name":"CATCH","kind":"hard","speed":38,"l":2.15,"angle":-2,"note":"a hard catch","x":150.43,"y":-2.15},{"t":18.615,"name":"REL","kind":"hand","speed":38,"angle":-2,"l":2.01,"note":"let go","x":183.64,"y":-2.01},{"t":18.616,"name":"APEX","height":-2.01,"speed":38,"note":"the top of the flight","x":183.65,"y":-2.01},{"t":18.776,"name":"REACH","height":-2.13,"note":"reached for the wire","x":185.34,"y":-2.13},{"t":18.786,"name":"CATCH","kind":"hard","speed":38,"l":2.15,"angle":-2,"note":"a hard catch","x":185.44,"y":-2.15},{"t":21.961,"name":"REL","kind":"hand","speed":38,"angle":-2,"l":2.01,"note":"let go","x":218.66,"y":-2.01},{"t":21.962,"name":"APEX","height":-2.01,"speed":38,"note":"the top of the flight","x":218.67,"y":-2.01},{"t":22.122,"name":"REACH","height":-2.13,"note":"reached for the wire","x":220.33,"y":-2.13},{"t":22.132,"name":"CATCH","kind":"hard","speed":37,"l":2.15,"angle":-3,"note":"a hard catch","x":220.43,"y":-2.15}]},"cross_fast":{"title":"Fastest, every section","kind":"cross","what":"the least time from a standstill to the 6th support, full thrust on the wire, dipping under every hanger","group":"cross-span","start":"still","params":{"lead":0.15,"len":2.1},"closes":true,"numbers":{"time_s":11.58,"top_kmh":114,"span_hits":0,"sections":"7/7","dips":7,"air_s":1.2},"note":"Every moment off the wire is a moment without thrust: seven dips keep her off it for 1.2 s in all. The shortest lead that works wins (a tenth of a second; less and the tips have not dropped clear of the clamp), with poles held at 2.1 m so the reach has room to find the wire again. Hopping over the spans was not searched: each would cost a brake and a release.","ended":"time up","tokens":[{"t":2.114,"name":"REL","kind":"hand","speed":33,"angle":-4,"l":2.11,"note":"let go","x":8.63,"y":-2.1},{"t":2.277,"name":"REACH","height":-2.24,"note":"reached for the wire","x":10.12,"y":-2.24},{"t":2.288,"name":"CATCH","kind":"hard","speed":33,"l":2.26,"angle":1,"note":"a hard catch","x":10.22,"y":-2.26},{"t":2.402,"name":"BACK","speed":35,"note":"swung back behind her tips","x":11.23,"y":-2.11},{"t":4.645,"name":"REL","kind":"hand","speed":62,"angle":-8,"l":2.11,"note":"let go","x":41.88,"y":-2.09},{"t":4.669,"name":"APEX","height":-2.08,"speed":62,"note":"the top of the flight","x":42.29,"y":-2.08},{"t":4.806,"name":"REACH","height":-2.18,"note":"reached for the wire","x":44.62,"y":-2.18},{"t":4.818,"name":"CATCH","kind":"hard","speed":61,"l":2.28,"angle":-16,"note":"a hard catch","x":44.82,"y":-2.19},{"t":6.382,"name":"REL","kind":"hand","speed":82,"angle":-38,"l":2.11,"note":"let go","x":75.4,"y":-1.65},{"t":6.543,"name":"REACH","height":-1.89,"note":"reached for the wire","x":79.06,"y":-1.89},{"t":6.556,"name":"CATCH","kind":"hard","speed":81,"l":2.29,"angle":-33,"note":"a hard catch","x":79.35,"y":-1.92},{"t":7.783,"name":"REL","kind":"hand","speed":93,"angle":-41,"l":2.1,"note":"let go","x":109.62,"y":-1.58},{"t":7.862,"name":"APEX","height":-1.55,"speed":93,"note":"the top of the flight","x":111.66,"y":-1.55},{"t":7.944,"name":"REACH","height":-1.59,"note":"reached for the wire","x":113.75,"y":-1.59},{"t":7.96,"name":"CATCH","kind":"hard","speed":92,"l":2.34,"angle":-47,"note":"a hard catch","x":114.16,"y":-1.6},{"t":9.069,"name":"REL","kind":"hand","speed":100,"angle":-26,"l":2.11,"note":"let go","x":144.75,"y":-1.89},{"t":9.127,"name":"APEX","height":-1.88,"speed":99,"note":"the top of the flight","x":146.35,"y":-1.88},{"t":9.23,"name":"REACH","height":-1.93,"note":"reached for the wire","x":149.17,"y":-1.93},{"t":9.243,"name":"CATCH","kind":"hard","speed":97,"l":2.29,"angle":-32,"note":"a hard catch","x":149.52,"y":-1.94},{"t":10.28,"name":"REL","kind":"hand","speed":106,"angle":-40,"l":2.11,"note":"let go","x":179.14,"y":-1.61},{"t":10.327,"name":"APEX","height":-1.6,"speed":106,"note":"the top of the flight","x":180.52,"y":-1.6},{"t":10.441,"name":"REACH","height":-1.66,"note":"reached for the wire","x":183.84,"y":-1.66},{"t":10.456,"name":"CATCH","kind":"hard","speed":104,"l":2.32,"angle":-44,"note":"a hard catch","x":184.28,"y":-1.68},{"t":11.433,"name":"REL","kind":"hand","speed":111,"angle":-30,"l":2.11,"note":"let go","x":214.22,"y":-1.82},{"t":11.484,"name":"APEX","height":-1.81,"speed":110,"note":"the top of the flight","x":215.79,"y":-1.81},{"t":11.594,"name":"REACH","height":-1.87,"note":"reached for the wire","x":219.12,"y":-1.87},{"t":11.607,"name":"CATCH","kind":"hard","speed":108,"l":2.29,"angle":-35,"note":"a hard catch","x":219.51,"y":-1.88}]},"cross_easy":{"title":"Least effort","kind":"cross","what":"the least energy from a standstill to the 6th support within a minute, dipping under every hanger: coil work plus the work of pulling the poles in","group":"cross-span","start":"still","params":{"target":6,"lead":0.1,"len":2.1},"closes":true,"numbers":{"effort_kJ":2.27,"time_s":28.93,"top_kmh":32,"span_hits":0,"dips":7},"note":"Held speeds of 5 to 12 m/s were tried; the cheapest was 6 m/s (2.3 kJ, 29 s). Each dip costs a little: after the catch her poles are longer and she pulls them back in under load before the next support. Faster costs more in drag and in the push to get up to speed.","ended":"time up","tokens":[{"t":2.204,"name":"REL","kind":"hand","speed":33,"angle":4,"l":2.11,"note":"let go","x":9.45,"y":-2.1},{"t":2.22,"name":"APEX","height":-2.1,"speed":33,"note":"the top of the flight","x":9.6,"y":-2.1},{"t":2.365,"name":"REACH","height":-2.2,"note":"reached for the wire","x":10.9,"y":-2.2},{"t":2.378,"name":"CATCH","kind":"hard","speed":32,"l":2.3,"angle":15,"note":"a hard catch","x":11.02,"y":-2.22},{"t":2.897,"name":"BACK","speed":32,"note":"swung back behind her tips","x":15.09,"y":-2.11},{"t":5.811,"name":"BACK","speed":32,"note":"swung back behind her tips","x":41.22,"y":-2.11},{"t":6.132,"name":"REL","kind":"hand","speed":28,"angle":-11,"l":2.11,"note":"let go","x":43.7,"y":-2.07},{"t":6.154,"name":"APEX","height":-2.07,"speed":28,"note":"the top of the flight","x":43.87,"y":-2.07},{"t":6.293,"name":"REACH","height":-2.16,"note":"reached for the wire","x":44.96,"y":-2.16},{"t":6.304,"name":"CATCH","kind":"hard","speed":28,"l":2.27,"angle":-16,"note":"a hard catch","x":45.05,"y":-2.18},{"t":8.243,"name":"BACK","speed":28,"note":"swung back behind her tips","x":60.8,"y":-2.11},{"t":10.603,"name":"REL","kind":"hand","speed":27,"angle":10,"l":2.11,"note":"let go","x":79.58,"y":-2.08},{"t":10.764,"name":"REACH","height":-2.21,"note":"reached for the wire","x":80.8,"y":-2.21},{"t":10.774,"name":"CATCH","kind":"hard","speed":27,"l":2.26,"angle":9,"note":"a hard catch","x":80.87,"y":-2.23},{"t":11.276,"name":"BACK","speed":27,"note":"swung back behind her tips","x":84.29,"y":-2.11},{"t":14.183,"name":"BACK","speed":27,"note":"swung back behind her tips","x":106.18,"y":-2.11},{"t":15.253,"name":"REL","kind":"hand","speed":29,"angle":-11,"l":2.11,"note":"let go","x":113.83,"y":-2.07},{"t":15.414,"name":"REACH","height":-2.21,"note":"reached for the wire","x":115.1,"y":-2.21},{"t":15.424,"name":"CATCH","kind":"hard","speed":28,"l":2.25,"angle":-9,"note":"a hard catch","x":115.18,"y":-2.22},{"t":17.223,"name":"BACK","speed":28,"note":"swung back behind her tips","x":129.71,"y":-2.11},{"t":19.699,"name":"REL","kind":"hand","speed":28,"angle":4,"l":2.11,"note":"let go","x":149.35,"y":-2.1},{"t":19.86,"name":"REACH","height":-2.23,"note":"reached for the wire","x":150.59,"y":-2.23},{"t":19.87,"name":"CATCH","kind":"hard","speed":28,"l":2.25,"angle":3,"note":"a hard catch","x":150.66,"y":-2.25},{"t":20.304,"name":"BACK","speed":28,"note":"swung back behind her tips","x":153.85,"y":-2.11},{"t":23.197,"name":"BACK","speed":28,"note":"swung back behind her tips","x":175.95,"y":-2.11},{"t":24.28,"name":"REL","kind":"hand","speed":28,"angle":-7,"l":2.11,"note":"let go","x":183.97,"y":-2.09},{"t":24.441,"name":"REACH","height":-2.22,"note":"reached for the wire","x":185.22,"y":-2.22},{"t":24.451,"name":"CATCH","kind":"hard","speed":28,"l":2.25,"angle":-6,"note":"a hard catch","x":185.29,"y":-2.24},{"t":26.14,"name":"BACK","speed":28,"note":"swung back behind her tips","x":198.54,"y":-2.11},{"t":28.829,"name":"REL","kind":"hand","speed":27,"angle":1,"l":2.11,"note":"let go","x":219.26,"y":-2.11},{"t":28.99,"name":"REACH","height":-2.24,"note":"reached for the wire","x":220.47,"y":-2.24},{"t":29,"name":"CATCH","kind":"hard","speed":27,"l":2.25,"angle":0,"note":"a hard catch","x":220.54,"y":-2.25}]}},"page":{"title":"Roping Ari: the cross-spans","listTitle":"Cross-span demos","listLine":"from a standstill, the trolleybus off, the cross-spans on, no wing: to the 6th support, catching the wire in every 35 m section","defaultDemo":"cross_ride"}};
 (function () {
 // ---- util.js
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -294,7 +294,10 @@ function makeFlight(P, physics, tuning) {
     let dl = open ? ctl.poleRate || 0 : 0;
     if (grip && open) {
       const s = Math.sin(f.phi), need = Math.abs(s) > 1e-6 ? -f.y / s : Infinity;     // length at which the tip meets the wire
-      const target = need >= L_MIN && need <= L_MAX ? need : L_MAX;
+      // from below the wire the falling body keeps pulling the tip back, so a reach aimed exactly at the wire creeps up on it and
+      // never crosses; it aims a little past it instead (from above the fall carries the tip through, as before)
+      const over = f.y + f.l * s < 0 && s > 0 ? tuning.reach_past ?? 0.03 : 0;
+      const target = need >= L_MIN && need <= L_MAX ? Math.min(need + over, L_MAX) : L_MAX;
       dl = Math.min(Math.max((target - f.l) / dt, -tuning.reach_speed), tuning.reach_speed);
     }
     const tipBefore = f.y + f.l * Math.sin(f.phi);
@@ -362,7 +365,7 @@ function makeWorld(physics, level) {
   const geom = () => { const rear = bus.shoes + B.shoe_overhang; return { shoes: bus.shoes, rear, front: rear + B.length, poleBase: rear + 4.5, roofY, floorY }; };
 
   function distToSegment(px, py, ax, ay, bx, by) {
-    const dx = bx - ax, dy = by - ay, t = Math.min(Math.max(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy), 0), 1);
+    const dx = bx - ax, dy = by - ay, t = Math.min(Math.max(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy || 1e-12), 0), 1);   // a zero-length segment is its point
     return Math.hypot(px - ax - t * dx, py - ay - t * dy);
   }
 
@@ -425,13 +428,24 @@ function makeGame(physics, level, opts = {}) {
   const CS_M = physics.body.mass + physics.body.poles_mass;
   const CS_BREAK_J = CS ? (() => { const x2 = ((CS.breaking - CS.pretension) * CS.length * CS.length) / (2 * CS.ea); return (2 * CS.pretension * x2) / CS.length + (2 * CS.ea * x2 * x2) / CS.length ** 3; })() : Infinity;
   g.crossSpanBreakSpeed = Math.sqrt((2 * CS_BREAK_J) / CS_M);
-  function crossSpan(hx, hy, tail, reach) {
+  /** Distance between segments ab and cd (0 when they cross). */
+  const segDist = (a, b, c, d) => {
+    const cr = (p, q, r) => (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
+    if (cr(a, b, c) * cr(a, b, d) < 0 && cr(c, d, a) * cr(c, d, b) < 0) return 0;
+    const D = world.distToSegment;
+    return Math.min(D(...a, ...c, ...d), D(...b, ...c, ...d), D(...c, ...a, ...b), D(...d, ...a, ...b));
+  };
+  // the cross-span and the hanger that holds the wire from it at every support (author, 2026-09-27: her tips hit the hanger,
+  // so riding the wire through a support is a hit too): a vertical segment from the wire up to the span, seen end-on
+  function crossSpan(hx, hy, tail, reach, tip0) {
     if (!CS) return;
     const [tx, ty] = g.tips(), k0 = Math.round((hx - 10) / world.SPAN);
     for (const k of [k0 - 1, k0, k0 + 1]) {
       if (world.broken.has(k)) continue;
-      const sx = world.spanX(k), sy = CS.height;
-      const d = Math.min(world.distToSegment(sx, sy, hx, hy, tx, ty), world.distToSegment(sx, sy, hx, hy, hx + reach * Math.cos(tail), hy + reach * Math.sin(tail)));
+      const sx = world.spanX(k), hanger = [[sx, 0], [sx, CS.height]], head = [hx, hy];
+      const d = Math.min(segDist(head, [tx, ty], ...hanger), segDist(head, [hx + reach * Math.cos(tail), hy + reach * Math.sin(tail)], ...hanger),
+                         segDist(tip0, [tx, ty], ...hanger));                                // the tips' own path this step: riding into the hanger
+      const sy = Math.min(Math.max(ty, 0), CS.height);
       if (d > CS.radius || (g.lastSpanHit.k === k && g.t - g.lastSpanHit.t < 0.3)) continue;
       g.lastSpanHit = { k, t: g.t }; g.spanHits++; g.spark = { x: sx, y: sy, until: g.t + CS.spark }; g.events.push('span');
       if (g.mode === 'wire') { g.fl = F.release(g.st, g.l, g.dl); g.mode = 'air'; g.releases++; g.airTime = 0; g.apex = g.fl.y; g.turns = 0; g.phi0 = g.fl.phi; }
@@ -456,7 +470,7 @@ function makeGame(physics, level, opts = {}) {
     g.t += dt; world.step(dt); g.events.length = 0;
     if (g.arcing()) cmd = { ...cmd, spread: false };
     g.shown = cmd;          // while the arc burns she cannot flare or fly: her body stays narrow
-    const [hx0, hy0] = g.head();
+    const [hx0, hy0] = g.head(), tip0 = g.tips();
     if (g.mode === 'wire') {
       const l0 = g.l;
       g.l = clamp(g.l + cmd.poleRate * dt, L_MIN, L_MAX); g.dl = (g.l - l0) / dt;
@@ -485,7 +499,7 @@ function makeGame(physics, level, opts = {}) {
     if (!g.over && cmd.spread && hy0 * hy < 0) { g.arcUntil = g.t + T.arc_seconds; g.arcs++; g.events.push('arc'); }
     const curl = g.mode === 'air' && g.fl ? g.fl.curl || 0 : 0, reach = LB + (F.ringDiameter(g.poleLength()) - LB) * curl;   // the hoop is compact
     if (!g.over) g.over = world.hit([[hx, hy], [hx + reach * Math.cos(tail), hy + reach * Math.sin(tail)]]);
-    if (!g.over && g.crossSpanOn) crossSpan(hx, hy, tail, reach);
+    if (!g.over && g.crossSpanOn) crossSpan(hx, hy, tail, reach, tip0);
     if (!g.over && world.bus.on && g.mode === 'wire' && g.catches > 0 && g.st.x > world.geom().front + 3) {
       g.passedAt ??= g.t;
       if (g.t - g.passedAt > 1.5) { g.over = 'She is past the trolleybus.'; g.won = true; }
@@ -616,7 +630,7 @@ function makeRenderer(canvas, world, physics) {
   const X = (x) => (x - camX) * S + W * 0.38, Y = (y) => H - (WIRE_H + y + 0.9) * S;
   const line = (x1, y1, x2, y2, col, w, dash) => { ctx.beginPath(); ctx.setLineDash(dash || []); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke(); ctx.setLineDash([]); };
 
-  function drawWorld() {
+  function drawWorld(game) {
     const grad = ctx.createLinearGradient(0, 0, 0, Y(-WIRE_H)); grad.addColorStop(0, C.sky1); grad.addColorStop(1, C.sky2);
     ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = C.city;
@@ -631,7 +645,8 @@ function makeRenderer(canvas, world, physics) {
     for (let k = n0; k <= n0 + Math.ceil((2 * W) / S / world.SPAN) + 1; k++) {
       const sx = X(k * world.SPAN + 10);
       line(sx, Y(-WIRE_H), sx, Y(1.1), C.muted, Math.max(2, 0.14 * S));
-      if (!world.broken.has(k)) line(sx - 0.5 * S, Y(0.55), sx + 0.5 * S, Y(0.55), C.muted, 1.5);   // the cross-span, seen end-on; gone once snapped
+      if (!world.broken.has(k)) { line(sx - 0.5 * S, Y(0.55), sx + 0.5 * S, Y(0.55), C.muted, 1.5);   // the cross-span, seen end-on; gone once snapped
+        if (game && game.crossSpanOn) { line(sx, Y(0.55), sx, Y(0), C.ink, 1.5); line(sx - 0.08 * S, Y(0.02), sx + 0.08 * S, Y(0.02), C.ink, 3); } }   // the hanger down to its clamp on the wire, a hazard with C on
       else { line(sx - 0.5 * S, Y(0.55), sx - 0.12 * S, Y(0.2), C.muted, 1.2); line(sx + 0.5 * S, Y(0.55), sx + 0.15 * S, Y(0.15), C.muted, 1.2); }
     }
     line(0, Y(0.12), W, Y(0.12), C.muted, 1); line(0, Y(0), W, Y(0), C.ink, 1.6);
@@ -742,7 +757,7 @@ function makeRenderer(canvas, world, physics) {
       const wantH = Math.max(11.6, WIRE_H + hy + 3.5);              // widen when she climbs
       viewH += (wantH - viewH) * 0.08; S = H / viewH;
       const lead = clamp(vx * 0.35, 2, 10); camX += (hx + lead - camX) * 0.15;
-      ctx.clearRect(0, 0, W, H); drawWorld(); if (game.arcing()) drawArc(game); drawAri(game, cmd, false);
+      ctx.clearRect(0, 0, W, H); drawWorld(game); if (game.arcing()) drawArc(game); drawAri(game, cmd, false);
       if (game.spark && game.t < game.spark.until) {                  // the cross-span spark: a white core, a blue fringe, a few orange sparks
         const px = X(game.spark.x), py = Y(game.spark.y), life = (game.spark.until - game.t) / 0.15;
         ctx.save(); ctx.globalAlpha = Math.max(0, life); ctx.fillStyle = '#FFFFFF'; ctx.shadowColor = '#7FB8FF'; ctx.shadowBlur = 24; ctx.beginPath(); ctx.arc(px, py, Math.max(5, 0.12 * S), 0, 7); ctx.fill();
@@ -920,9 +935,24 @@ function goLifted(g, k, p, st) {
 // ---- cross-span demos (task 4.5)
 const CROSS_GOAL = 6;
 function crossSetup(g) { if (g.world.bus.on) g.world.setBus(false); g.crossSpanOn = true; }
-/** Past the goal on the wire: brake to a stop (the run ends there). */
-const crossPast = (g) => g.mode === 'wire' && g.st.x >= g.world.spanX(CROSS_GOAL);
-const crossStopped = (g) => crossPast(g) && Math.abs(g.st.u) < 0.3 && Math.abs(g.st.om) < 0.3;
+/** Ride with the poles at `len` m, pushing when `push`; let go `lead` s before the next support's hanger and reach for the wire once
+ *  the tips are past it. The grip key is an edge: a press lets go on the wire, a second press in the air starts the reach. */
+function dip(g, k, p, st, push) {
+  const W = g.world;
+  if (g.mode === 'wire') {
+    k.right = push;
+    if (g.l > p.len + 0.01) k.up = true; else if (g.l < p.len - 0.01) k.down = true;
+    const next = W.spanX(Math.floor((g.st.x - 10) / W.SPAN) + 1);
+    if (next - g.st.x < Math.max(0, g.st.u) * p.lead + 0.02 && !st.pressed) { k.grip = true; st.pressed = true; st.past = next; }
+    else st.pressed = false;
+  } else {
+    st.pressed = false;
+    if (g.tips()[0] > st.past + 0.08 && g.airTime > 0.16 && !g.reaching) k.grip = !st.gripped, st.gripped = !st.gripped; else st.gripped = false;
+  }
+}
+/** The run ends as her tips pass the goal on the wire; the page stops there too. */
+const crossStopped = (g) => g.mode === 'wire' && g.st.x >= g.world.spanX(CROSS_GOAL);
+
 /** Time to the goal, sections caught on the way, top speed, and effort: coil work spent plus the work of pulling the poles in under load. */
 function crossResult(g, trace) {
   const W = g.world, goal = W.spanX(CROSS_GOAL), reach = trace.findIndex((r) => r.tx >= goal), upto = reach < 0 ? trace : trace.slice(0, reach + 1);
@@ -930,7 +960,8 @@ function crossResult(g, trace) {
   let all = true; for (let k = 0; k <= CROSS_GOAL; k++) if (!caught.has(k)) all = false;
   let effort = 0, top = 0; for (const r of upto) { effort += (Math.max(0, r.fCoil * r.u) + Math.max(0, -r.dl * r.tension)) * r.dt; top = Math.max(top, r.u); }
   const done = reach >= 0 && all && g.spanHits === 0 && !g.over;
-  return { done, t: reach >= 0 ? +upto[upto.length - 1].t.toFixed(2) : null, sections: `${[...caught].filter((k) => k >= 0 && k <= CROSS_GOAL).length}/${CROSS_GOAL + 1}`, effort: +(effort / 1000).toFixed(2), top: +(top * 3.6).toFixed(0) };
+  const air = upto.filter((r) => r.mode === 'air').reduce((a, r) => a + r.dt, 0), dips = upto.filter((r, i) => i && r.mode === 'air' && upto[i - 1].mode === 'wire').length;
+  return { done, air: +air.toFixed(2), dips, t: reach >= 0 ? +upto[upto.length - 1].t.toFixed(2) : null, sections: `${[...caught].filter((k) => k >= 0 && k <= CROSS_GOAL).length}/${CROSS_GOAL + 1}`, effort: +(effort / 1000).toFixed(2), top: +(top * 3.6).toFixed(0) };
 }
 
 const demos = {
@@ -1045,41 +1076,34 @@ const demos = {
   },
 
   // ---- the cross-span (task 4.5, author 2026-09-27): from a standstill, bus off, cross-spans on, no wing and no lifted gait.
-  // The goal: her tips past the 6th support (220 m), having caught the wire at least once in every 35 m section on the way.
+  // Her tips hit the hanger at every support, so she dips under each one: lets go just before it, drops a few centimetres,
+  // and reaches back up just past it. The goal: her tips past the 6th support (220 m), the wire caught in every 35 m section.
   cross_ride: {
-    title: 'Clear of the spans', kind: 'cross', group: 'cross-span', start: 'still', tMax: 40,
-    what: 'from a standstill to the 6th support on the wire, never meeting a cross-span: the steady ride',
-    params: { target: [15] },
-    plan(g, p) { const k = {}; crossSetup(g); if (crossPast(g)) k.left = g.st.u > 0.2; else if (g.mode === 'wire') k.right = g.st.u < p.target; return k; },
+    title: 'Under the hangers', kind: 'cross', group: 'cross-span', start: 'still', tMax: 60,
+    what: 'from a standstill to the 6th support at a steady 10 m/s, dipping under the hanger at every support',
+    params: { target: [10], lead: [0.1, 0.12, 0.15], len: [2.0, 2.1, 2.2] },
+    plan(g, p, st) { const k = {}; crossSetup(g); dip(g, k, p, st, g.mode === 'wire' && g.st.u < p.target); return k; },
     done: crossStopped,
-    closes(toks, g, trace) { const c = crossResult(g, trace); return { ok: c.done, time_s: c.t, top_kmh: c.top, span_hits: g.spanHits, sections: c.sections, score: c.done ? -c.t : -99,
-      note: 'On the wire her poles and body hang below it, and the cross-spans run 55 cm above it, so riding never meets one: they are a hazard only for a hop.' }; },
+    closes(toks, g, trace) { const c = crossResult(g, trace); return { ok: c.done, time_s: c.t, top_kmh: c.top, span_hits: g.spanHits, sections: c.sections, dips: c.dips, score: c.done ? -c.t : -99 - g.spanHits,
+      note: 'Riding into a support her tips would meet the hanger, so at each one she lets go a tenth of a second or so before it, falls a few centimetres with her tips under the clamp, and reaches back for the wire once past it.' }; },
   },
   cross_fast: {
     title: 'Fastest, every section', kind: 'cross', group: 'cross-span', start: 'still', tMax: 40,
-    what: 'the least time from a standstill to the 6th support, catching the wire in every 35 m section and never meeting a cross-span: full power on the wire, or hops inside each section',
-    params: { strategy: ['ride', 'hop'], release: [35, 50, 65], hard: [false, true] },
-    plan(g, p, st) { const k = {}; crossSetup(g); const W = g.world;
-      if (crossPast(g)) k.left = g.st.u > 0.2;
-      else if (g.mode === 'wire') {
-        const tx = g.st.x, sec = Math.ceil((tx - 10) / W.SPAN), left = W.spanX(sec) - tx;
-        if (p.strategy === 'hop' && g.st.u > 12 && st.hopped !== sec && left > 22 && left < W.SPAN - 3) { st.braking = sec; }
-        if (st.braking === sec) { k.left = true; k.hard = p.hard; if (g.st.th >= rad(p.release) && g.st.om > 0) { k.grip = true; st.hopped = sec; st.braking = null; st.target = W.spanX(sec); } }
-        else k.right = true;                                                        // otherwise full power
-      } else { const late = g.fl.x > st.target - 6; if ((g.fl.vy < 0 && g.fl.y < 1.2) || late) k.grip = true; }   // reach on the way down, or before the next support
-      return k; },
+    what: 'the least time from a standstill to the 6th support, full thrust on the wire, dipping under every hanger',
+    params: { lead: [0.08, 0.1, 0.12, 0.15], len: [1.9, 2.0, 2.1, 2.2] },
+    plan(g, p, st) { const k = {}; crossSetup(g); dip(g, k, p, st, g.mode === 'wire'); return k; },
     done: crossStopped,
-    closes(toks, g, trace) { const c = crossResult(g, trace); return { ok: c.done, time_s: c.t, top_kmh: c.top, span_hits: g.spanHits, sections: c.sections, hops: toks.filter((x) => x.name === 'REL').length, score: c.done ? -c.t : -99,
-      note: 'Full thrust the whole way wins. The search also tried a brake-and-release hop inside every section; none closed: each hop cost more speed than the flight gave back, and the catch either missed a section or a pole met the next cross-span.' }; },
+    closes(toks, g, trace) { const c = crossResult(g, trace); return { ok: c.done, time_s: c.t, top_kmh: c.top, span_hits: g.spanHits, sections: c.sections, dips: c.dips, air_s: c.air, score: c.done ? -c.t : -99 - g.spanHits,
+      note: 'Every moment off the wire is a moment without thrust: seven dips keep her off it for 1.2 s in all. The shortest lead that works wins (a tenth of a second; less and the tips have not dropped clear of the clamp), with poles held at 2.1 m so the reach has room to find the wire again. Hopping over the spans was not searched: each would cost a brake and a release.' }; },
   },
   cross_easy: {
     title: 'Least effort', kind: 'cross', group: 'cross-span', start: 'still', tMax: 60,
-    what: 'the least energy from a standstill to the 6th support within a minute, every section caught, no cross-span met: coil work plus the work of pulling the poles in',
-    params: { target: [4, 5, 6, 7, 8, 10, 12, 15] },
-    plan(g, p) { const k = {}; crossSetup(g); if (crossPast(g)) k.left = g.st.u > 0.2; else if (g.mode === 'wire') k.right = g.st.u < p.target; return k; },
+    what: 'the least energy from a standstill to the 6th support within a minute, dipping under every hanger: coil work plus the work of pulling the poles in',
+    params: { target: [5, 6, 7, 8, 10, 12], lead: [0.1, 0.12, 0.15], len: [2.0, 2.1, 2.2] },
+    plan(g, p, st) { const k = {}; crossSetup(g); dip(g, k, p, st, g.mode === 'wire' && g.st.u < p.target); return k; },
     done: crossStopped,
-    closes(toks, g, trace) { const c = crossResult(g, trace); return { ok: c.done, effort_kJ: c.effort, time_s: c.t, top_kmh: c.top, span_hits: g.spanHits, score: c.done ? -c.effort : -99,
-      note: 'Held speeds of 4 to 15 m/s were tried; the cheapest was 7 m/s (2.4 kJ). Faster costs more in air drag and in the push to get up to speed; slower costs more too, because the coils switch on and off around the held speed and set her swinging.' }; },
+    closes(toks, g, trace) { const c = crossResult(g, trace); return { ok: c.done, effort_kJ: c.effort, time_s: c.t, top_kmh: c.top, span_hits: g.spanHits, dips: c.dips, score: c.done ? -c.effort : -99 - g.spanHits,
+      note: 'Held speeds of 5 to 12 m/s were tried; the cheapest was 6 m/s (2.3 kJ, 29 s). Each dip costs a little: after the catch her poles are longer and she pulls them back in under load before the next support. Faster costs more in drag and in the push to get up to speed.' }; },
   },
 };
 
@@ -1270,7 +1294,7 @@ function boot(data, doc) {
   let game, cmds, clock, renderer, keys = {}, paused = false, busOn = !/[#&]nobus/.test(location.hash), lifted = /[#&]lifted/.test(location.hash), assist = null,
       scale = +(/[#&]speed=([\d.]+)/.exec(location.hash) || [0, level.input.time_scale ?? 1])[1], watch = /[#&]watch/.test(location.hash), last = performance.now(), cmd;
   // ---- a demo (#demo=<id>): a candidate of demos.js played by its plan, with its key moments numbered (tasks 12.1, 11.3)
-  const demoId = (/[#&]demo=(\w+)/.exec(location.hash) || [])[1] || (data.page && data.page.defaultDemo), demo = demoId && data.demos && data.demos[demoId] && demos[demoId] ? { ...data.demos[demoId], plan: demos[demoId].plan } : null;
+  const demoId = (/[#&]demo=(\w+)/.exec(location.hash) || [])[1] || (data.page && data.page.defaultDemo), demo = demoId && data.demos && data.demos[demoId] && demos[demoId] ? { ...data.demos[demoId], plan: demos[demoId].plan, done: demos[demoId].done } : null;
   let demoState = freshState(), stopAtMoments = false, moment = -1, seeking = false;
   // ---- the sound of her tips: off until the player picks a variant (browsers want a click before audio)
   let sound = null, soundCtx = null;
@@ -1380,6 +1404,7 @@ function boot(data, doc) {
       if (paused) return;
       cmd = cmds.update(demo ? demo.plan(game, demo.params, demoState) : watch ? autopilots.brakePullHoop(game) : keys, dt, watch || demo ? null : padRead); game.step(cmd, dt); if (game.events.includes('arc')) cmds.cancelSpread();
       if (demo) { if (game.won && game.over) { game.over = null; game.passedAt = Infinity; }              // a demo runs on past the win
+        if (demo.done && demo.done(game, demoState)) paused = true;                          // a demo with an end (the cross-span runs) stops there
         const next = moments.findIndex((k) => k.t > game.t - dt - 1e-9 && k.t <= game.t + 1e-9); if (next >= 0) { moment = next; if (stopAtMoments) paused = true; drawMoments(); } }
     });
     renderer.draw(game, game.shown || cmd, level.tuning, demo ? marks() : []); readout();
